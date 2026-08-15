@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  
 }
 
 @theme inline {
@@ -20,7 +20,207 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  
   font-family: Arial, Helvetica, sans-serif;
+}
+.nunito-font {
+  font-family: "Nunito", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 800;
+  font-style: normal;
+}
+
+/* ========================================
+   GLOBAL PAW BACKGROUND
+======================================== */
+
+.global-paw-background {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+
+  overflow: hidden;
+  pointer-events: none;
+
+  /* Above section backgrounds, below website content */
+  z-index: 5;
+}
+
+.floating-paw {
+  position: absolute;
+
+  /* Don't use opacity + rgba together */
+  opacity: 0.22;
+
+  animation-name: pawFloat;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+
+  will-change: transform;
+}
+
+
+/* ========================================
+   PAW 1 — PURPLE
+======================================== */
+
+.paw-1 {
+  width: 70px;
+  height: 70px;
+
+  left: 3%;
+  top: 10%;
+
+  color: #8b5cf6;
+
+  animation-duration: 6s;
+}
+
+
+/* ========================================
+   PAW 2 — SKY BLUE
+======================================== */
+
+.paw-2 {
+  width: 45px;
+  height: 45px;
+
+  left: 1%;
+  top: 32%;
+
+  color: #38bdf8;
+
+  animation-duration: 7s;
+  animation-delay: 1s;
+}
+
+
+/* ========================================
+   PAW 3 — PINK
+======================================== */
+
+.paw-3 {
+  width: 55px;
+  height: 55px;
+
+  left: 5%;
+  top: 70%;
+
+  color: #ec4899;
+
+  animation-duration: 8s;
+  animation-delay: 2s;
+}
+
+
+/* ========================================
+   PAW 4 — BLUE
+======================================== */
+
+.paw-4 {
+  width: 68px;
+  height: 68px;
+
+  right: 5%;
+  top: 28%;
+
+  color: #6366f1;
+
+  animation-duration: 7s;
+  animation-delay: 1.5s;
+}
+
+
+/* ========================================
+   PAW 5 — MINT
+======================================== */
+
+.paw-5 {
+  width: 48px;
+  height: 48px;
+
+  right: 2%;
+  top: 68%;
+
+  color: #14b8a6;
+
+  animation-duration: 6.5s;
+  animation-delay: 0.5s;
+}
+
+
+/* ========================================
+   PAW 6 — ORANGE
+======================================== */
+
+.paw-6 {
+  width: 40px;
+  height: 40px;
+
+  right: 14%;
+  top: 47%;
+
+  color: #f97316;
+
+  animation-duration: 8s;
+  animation-delay: 3s;
+}
+
+
+/* ========================================
+   PAW 7 — VIOLET
+======================================== */
+
+.paw-7 {
+  width: 46px;
+  height: 46px;
+
+  left: 15%;
+  top: 83%;
+
+  color: #a855f7;
+
+  animation-duration: 7.5s;
+  animation-delay: 2.5s;
+}
+
+
+/* ========================================
+   PAW 8 — CYAN
+======================================== */
+
+.paw-8 {
+  width: 42px;
+  height: 42px;
+
+  right: 18%;
+  top: 12%;
+
+  color: #06b6d4;
+
+  animation-duration: 9s;
+  animation-delay: 1s;
+}
+
+
+/* ========================================
+   FLOATING ANIMATION
+======================================== */
+
+@keyframes pawFloat {
+
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-18px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+
 }
