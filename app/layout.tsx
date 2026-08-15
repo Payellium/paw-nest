@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import GlobalPawBackground from "@/components/GlobalPawBackground";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "PawNest",
@@ -23,6 +24,8 @@ export default function RootLayout({
           <Navbar />
 
           {children}
+
+          <Footer></Footer>
         </div>
 
       </body>
