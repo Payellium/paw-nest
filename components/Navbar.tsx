@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FaPaw, FaShoppingCart, FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
 import { useState } from "react";
+import { IoCartOutline } from "react-icons/io5";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -14,9 +15,8 @@ const Navbar = () => {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-4">
 
-          <div className="flex h-15.5x w-15.5 items-center justify-center rounded-3xl bg-linear-to-br from-[#8B5CF6] to-[#29B6F6] shadow-[0_5px_12px_rgba(99,102,241,0.25)]">
+          <div className="flex h-15.5 w-15.5 items-center justify-center rounded-3xl bg-linear-to-br from-[#8B5CF6] to-[#29B6F6] shadow-[0_5px_12px_rgba(99,102,241,0.25)]">
             <FaPaw className="text-[27px] text-[#28345D]" />
-            
           </div>
 
           <span className="bg-linear-to-r from-[#7C3AED] to-[#00A9F4] bg-clip-text text-[36px] font-extrabold tracking-[-1.5px] text-transparent">
@@ -80,7 +80,7 @@ const Navbar = () => {
             href="/cart"
             className="flex h-15.5 w-15.5 items-center justify-center rounded-[22px] border border-[#E8EAF2] bg-white shadow-[0_2px_8px_rgba(30,41,59,0.08)] transition hover:shadow-md"
           >
-            <FaShoppingCart className="text-[27px] text-[#7C3AED]" />
+            <IoCartOutline className="text-[27px] text-[#7C3AED]" />
           </Link>
 
           {/* Login */}
