@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import React, { useRef } from "react";
 import { FaStar, FaArrowLeft, FaArrowRight } from "react-icons/fa";
 
@@ -171,11 +172,11 @@ const BestSellers = () => {
         {products.map((product) => (
           <article
             key={product.id}
-            className="w-[325px] min-w-[325px] overflow-hidden rounded-[25px] bg-gradient-to-b from-white to-[#F8FBFF] shadow-[0_4px_12px_rgba(15,23,42,0.12)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_16px_30px_rgba(15,23,42,0.15)] sm:w-[325px] sm:min-w-[325px]"
+            className="w-81.25 min-w-81.25 overflow-hidden rounded-[25px] bg-linear-to-b from-white to-[#F8FBFF] shadow-[0_4px_12px_rgba(15,23,42,0.12)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_16px_30px_rgba(15,23,42,0.15)] sm:w-81.25 sm:min-w-81.25"
           >
 
             {/* ================= IMAGE ================= */}
-            <div className="h-[200px] overflow-hidden">
+            <div className="h-50 overflow-hidden">
 
               <img
                 src={product.image}
@@ -190,7 +191,7 @@ const BestSellers = () => {
             <div className="px-6 py-5">
 
               {/* Product name */}
-              <h3 className="min-h-[52px] text-[21px] font-extrabold leading-[1.35] text-[#26344D]">
+              <h3 className="min-h-13 text-[21px] font-extrabold leading-[1.35] text-[#26344D]">
                 {product.name}
               </h3>
 

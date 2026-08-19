@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { FaPaw, FaShoppingCart, FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
+import { FaPaw, FaSignInAlt, FaBars, FaTimes } from "react-icons/fa";
 import { useState } from "react";
-import { IoCartOutline } from "react-icons/io5";
+
+import CartDrawer from "./CartDrawer";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -49,12 +50,6 @@ const Navbar = () => {
             Shop
           </Link>
 
-          <Link
-            href="/success-stories"
-            className="text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
-          >
-            Success Stories
-          </Link>
 
           <Link
             href="/about"
@@ -63,12 +58,7 @@ const Navbar = () => {
             About
           </Link>
 
-          <Link
-            href="/contact"
-            className="text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
-          >
-            Contact
-          </Link>
+
 
         </div>
 
@@ -76,13 +66,13 @@ const Navbar = () => {
         <div className="hidden items-center gap-4 md:flex">
 
           {/* Cart */}
-          <Link
+          {/* <Link
             href="/cart"
             className="flex h-15.5 w-15.5 items-center justify-center rounded-[22px] border border-[#E8EAF2] bg-white shadow-[0_2px_8px_rgba(30,41,59,0.08)] transition hover:shadow-md"
           >
             <IoCartOutline className="text-[27px] text-[#7C3AED]" />
-          </Link>
-
+          </Link> */}
+          <CartDrawer></CartDrawer>
           {/* Login */}
           <Link
             href="/login"
@@ -140,13 +130,7 @@ const Navbar = () => {
               Shop
             </Link>
 
-            <Link
-              href="/success-stories"
-              onClick={() => setMenuOpen(false)}
-              className="text-lg font-semibold text-[#50607A]"
-            >
-              Success Stories
-            </Link>
+            
 
             <Link
               href="/about"
@@ -156,22 +140,17 @@ const Navbar = () => {
               About
             </Link>
 
-            <Link
-              href="/contact"
-              onClick={() => setMenuOpen(false)}
-              className="text-lg font-semibold text-[#50607A]"
-            >
-              Contact
-            </Link>
+            
 
-            <div className="mt-2 flex gap-3">
+            <div className=" gap-3">
 
-              <Link
+              {/* <Link
                 href="/cart"
                 className="flex h-13 w-13 items-center justify-center rounded-[18px] border border-[#E8EAF2] text-[#7C3AED]"
               >
                 <FaShoppingCart />
-              </Link>
+              </Link> */}
+              <span className="text-lg font-semibold flex items-center text-[#50607A] "><CartDrawer></CartDrawer>Cart</span>
 
               <Link
                 href="/login"

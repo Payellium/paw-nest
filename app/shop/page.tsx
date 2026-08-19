@@ -1,11 +1,5 @@
-import React from 'react';
+export default async function ShopPage() {
+  
 
-const page = () => {
-    return (
-        <div>
-            This is Shop Page
-        </div>
-    );
-};
-
-export default page;
+  return <h1>Shop Page</h1>;
+}

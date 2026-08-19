@@ -1367,6 +1367,7 @@ body {
 
 }
 
+/* CART Drawer */
 /* Hide horizontal scrollbar */
 .scrollbar-hide {
   -ms-overflow-style: none;
@@ -1375,4 +1376,18 @@ body {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+@keyframes cartSlideIn {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-cart-slide {
+  animation: cartSlideIn 0.35s ease-out forwards;
 }

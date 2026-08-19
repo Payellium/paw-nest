@@ -3,7 +3,6 @@
 import Link from "next/link";
 import React from "react";
 import { motion } from "motion/react";
-
 import { AiOutlineSafetyCertificate } from "react-icons/ai";
 import { CiDeliveryTruck } from "react-icons/ci";
 import { FaArrowRight, FaPaw, FaShoppingBag } from "react-icons/fa";

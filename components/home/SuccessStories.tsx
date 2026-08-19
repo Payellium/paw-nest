@@ -81,7 +81,7 @@ const SuccessStories = () => {
                         <div className="relative h-62.5 w-full overflow-hidden sm:h-70">
 
                             <Image
-                                src="/images/pet.jpg"
+                                src="/images/cats/pet.jpg"
                                 alt={`${story.petName} success story`}
                                 fill
                                 className="object-cover transition-transform duration-700 hover:scale-105"
@@ -115,7 +115,7 @@ const SuccessStories = () => {
 
                                 <div className="relative h-13 w-13 shrink-0 overflow-hidden rounded-full ring-2 ring-[#E9D8FD]">
                                     <Image
-                                        src="/image/pets.jpg"
+                                        src="/image/cats/pets.jpg"
                                         alt={story.ownerName}
                                         fill
                                         className="object-cover"
