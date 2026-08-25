@@ -83,7 +83,7 @@ const Hero = () => {
             delay: 0.15,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="max-w-300 nunito-font text-[45px] mr-10 font-extrabold leading-[1.05] tracking-[-1.5px] text-[#1E293B] sm:text-[54px] md:text-[60px] lg:text-[64px] xl:text-[78px]"
+          className="max-w-300 nunito-font text-[45px]  font-extrabold leading-[1.05] tracking-[-1.5px] text-[#1E293B] sm:text-[54px] md:text-[60px] lg:text-[64px] xl:text-[78px]"
         >
           Find Your Perfect{" "}
 
@@ -132,7 +132,7 @@ const Hero = () => {
             delay: 0.55,
             ease: "easeOut",
           }}
-          className="mt-8 max-w-225 text-base font-medium mr-10 leading-8 text-[#50607A] sm:text-lg md:text-[23px] md:leading-10"
+          className="mt-8 max-w-225 text-base font-medium leading-8 text-[#50607A] sm:text-lg md:text-[23px] md:leading-10"
         >
           Adopt a loving pet or shop premium supplies. PawNest connects
           families with shelter animals and provides everything your new
@@ -158,7 +158,7 @@ const Hero = () => {
             delay: 0.7,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="mt-12 mr-20 flex w-full flex-col items-center justify-center gap-5 sm:flex-row"
+          className="mt-12 flex w-full flex-col items-center justify-center gap-5 sm:flex-row"
         >
 
           {/* Adopt Button */}
@@ -207,7 +207,7 @@ const Hero = () => {
             FEATURE PILLS
         ========================= */}
 
-        <div className="mt-10 flex flex-wrap mr-20 justify-center gap-3 sm:gap-5">
+        <div className="mt-10 flex flex-wrap  justify-center gap-3 sm:gap-5">
 
           {/* Safe Adoption */}
 

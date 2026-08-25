@@ -1,3 +1,4 @@
+import PawNestAISection from "@/components/chatbot/PawNestAISection";
 import AdoptionSteps from "@/components/home/AdoptionSteps";
 import BestSellers from "@/components/home/BestSellers";
 import CatCategories from "@/components/home/CatCategories";
@@ -17,6 +18,10 @@ export default function Home() {
       <ScrollParallax distance={35}>
         <Hero />
       </ScrollParallax>
+
+      <ScrollReveal>
+        <PawNestAISection></PawNestAISection>
+      </ScrollReveal>
 
       <ScrollReveal>
         <CatCategories />
@@ -41,8 +46,6 @@ export default function Home() {
       <ScrollReveal>
         <SuccessStories></SuccessStories>
       </ScrollReveal>
-
-      
 
       <ScrollReveal>
         <ImpactStats />

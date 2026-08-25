@@ -3,9 +3,13 @@ import mongoose, { Schema } from "mongoose";
 interface ICat {
   name: string;
   breed: string;
-  age: number;
+  ageInMonths: number;
   gender: string;
-  available: boolean;
+  location: string;
+  image: string;
+  personality: string[];
+  adoptionStatus: string;
+
 }
 
 const catSchema = new Schema<ICat>({
@@ -17,7 +21,7 @@ const catSchema = new Schema<ICat>({
     type: String,
     required: true,
   },
-  age: {
+  ageInMonths: {
     type: Number,
     required: true,
   },
@@ -25,8 +29,24 @@ const catSchema = new Schema<ICat>({
     type: String,
     required: true,
   },
-  available: {
-    type: Boolean,
+  location: {
+    type: String,
     required: true,
   },
+  image: {
+    type: String,
+    required: true,
+  },
+  personality: {
+    type: [String],
+    required: true,
+  },
+  adoptionStatus: {
+    type: String,
+    required: true,
+  }
 });
+
+const Cat = mongoose.models.Cat || mongoose.model<ICat>("Cat", catSchema);
+
+export default Cat;

@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import GlobalPawBackground from "@/components/GlobalPawBackground";
 import Footer from "@/components/Footer";
+import CatHealthChatbot from "@/components/chatbot/CatHealthChatbot";
 
 export const metadata: Metadata = {
   title: "PawNest",
@@ -27,7 +28,7 @@ export default function RootLayout({
 
           <Footer></Footer>
         </div>
-
+        <CatHealthChatbot></CatHealthChatbot>
       </body>
     </html>
   );

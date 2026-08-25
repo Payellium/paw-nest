@@ -5,34 +5,34 @@ const stories = [
     {
         petName: "Max",
         petImage:
-            "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=1000&q=80",
+            "/images/cats/max.webp",
         story:
             "Max completely transformed our home. He brought so much joy into our lives. The adoption process was smooth and wonderful.",
         ownerName: "Sarah Johnson",
         ownerImage:
-            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
+            "/images/users/user1.jpg",
         address: "Austin, TX",
     },
     {
         petName: "Luna",
         petImage:
-            "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=1000&q=80",
+            "/images/cats/luna.jpg",
         story:
             "We adopted Luna for our daughter's birthday. She's gentle, loving, and absolutely adores cuddles.",
         ownerName: "Emily Carter",
         ownerImage:
-            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+            "/images/users/user2.jpg",
         address: "Portland, OR",
     },
     {
         petName: "Charlie",
         petImage:
-            "https://images.unsplash.com/photo-1558788353-f76d92427f16?auto=format&fit=crop&w=1000&q=80",
+            "/images/cats/charlie.jpg",
         story:
             "Charlie is my perfect morning-run partner. PawNest made everything transparent and stress-free.",
         ownerName: "Michael Brown",
         ownerImage:
-            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+            "/images/users/user3.webp",
         address: "Denver, CO",
     },
 ];
@@ -81,7 +81,7 @@ const SuccessStories = () => {
                         <div className="relative h-62.5 w-full overflow-hidden sm:h-70">
 
                             <Image
-                                src="/images/cats/pet.jpg"
+                                src={story.petImage}
                                 alt={`${story.petName} success story`}
                                 fill
                                 className="object-cover transition-transform duration-700 hover:scale-105"
@@ -115,7 +115,7 @@ const SuccessStories = () => {
 
                                 <div className="relative h-13 w-13 shrink-0 overflow-hidden rounded-full ring-2 ring-[#E9D8FD]">
                                     <Image
-                                        src="/image/cats/pets.jpg"
+                                        src={story.ownerImage}
                                         alt={story.ownerName}
                                         fill
                                         className="object-cover"

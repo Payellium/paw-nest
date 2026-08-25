@@ -5,25 +5,25 @@ import { FaPaw } from "react-icons/fa";
 
 const stats = [
   {
-    number: 12400,
+    number: 120,
     label: "Pets Adopted",
     icon: "🐾",
     suffix: "+",
   },
   {
-    number: 9800,
+    number: 98,
     label: "Happy Families",
     icon: "🏠",
     suffix: "+",
   },
   {
-    number: 45000,
+    number: 450,
     label: "Products Sold",
     icon: "🛍️",
     suffix: "+",
   },
   {
-    number: 280,
+    number: 12,
     label: "Partner Shelters",
     icon: "🤝",
     suffix: "",

@@ -44,6 +44,13 @@ const Navbar = () => {
           </Link>
 
           <Link
+            href="/pawnest-ai"
+            className="text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
+          >
+            PawNest AI
+          </Link>
+
+          <Link
             href="/shop"
             className="text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
           >
