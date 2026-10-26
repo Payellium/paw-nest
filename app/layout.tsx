@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import GlobalPawBackground from "@/components/GlobalPawBackground";
 import Footer from "@/components/Footer";
 import CatHealthChatbot from "@/components/chatbot/CatHealthChatbot";
+import AuthSessionProvider from "./SessionProvider";
 
 export const metadata: Metadata = {
   title: "PawNest",
@@ -19,7 +20,8 @@ export default function RootLayout({
     <html lang="en">
       <body>
 
-        <GlobalPawBackground />
+        <AuthSessionProvider>
+            <GlobalPawBackground />
 
         <div className="relative z-10">
           <Navbar />
@@ -29,6 +31,7 @@ export default function RootLayout({
           <Footer></Footer>
         </div>
         <CatHealthChatbot></CatHealthChatbot>
+        </AuthSessionProvider>
       </body>
     </html>
   );

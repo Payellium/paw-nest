@@ -1,21 +1,14 @@
 import { connectDB } from "@/lib/mongodb";
-import Cat from "@/models/Cats";
+import Cat from "../../../models/Cat";
 
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
     await connectDB();
 
-    const cat = await Cat.create({
-      name: "Luna",
-      breed: "Persian",
-      ageInMonths: 8,
-      gender: "Female",
-      location: "Dhaka",
-      image: "/images/cats/luna.jpg",
-      personality: ["Calm", "Friendly"],
-      adoptionStatus: "Available",
-    });
+    const body = await request.json();
+
+    const cat = await Cat.create(body);
 
     return Response.json(
       {
@@ -31,6 +24,29 @@ export async function POST() {
       {
         success: false,
         message: "Failed to create cat",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET() {
+  try {
+    await connectDB();
+
+    const cats = await Cat.find();
+
+    return Response.json({
+      success: true,
+      cats,
+    });
+  } catch (error) {
+    console.error("Error fetching cats:", error);
+
+    return Response.json(
+      {
+        success: false,
+        message: "Failed to fetch cats",
       },
       { status: 500 }
     );
