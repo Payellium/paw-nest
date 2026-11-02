@@ -11,6 +11,13 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const registered = searchParams.get("registered") === "true";
 
+  const callbackUrl = searchParams.get("callbackUrl");
+
+  const redirectTo =
+    callbackUrl && callbackUrl.startsWith("/") && !callbackUrl.startsWith("//")
+      ? callbackUrl
+      : "/adopt";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -35,7 +42,7 @@ function LoginForm() {
         return;
       }
 
-      router.push("/adopt");
+      router.push(redirectTo);
       router.refresh();
     } catch (err) {
       console.error("Login error:", err);

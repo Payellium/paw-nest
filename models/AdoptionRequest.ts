@@ -1,9 +1,9 @@
 
 import mongoose, { Schema, Model } from "mongoose";
 
-
 export interface IAdoptionRequest {
   catId: mongoose.Types.ObjectId;
+  userId: string;
   applicantName: string;
   email: string;
   phone: string;
@@ -17,13 +17,17 @@ export interface IAdoptionRequest {
   updatedAt?: Date;
 }
 
-
 const AdoptionRequestSchema = new Schema<IAdoptionRequest>(
   {
     catId: {
       type: Schema.Types.ObjectId,
       ref: "Cat",
       required: true,
+    },
+    userId: {
+      type: String,
+      required: true,
+      index: true,
     },
     applicantName: {
       type: String,

@@ -1,4 +1,5 @@
 
+import { auth } from "@/auth";
 import { connectDB } from "@/lib/mongodb";
 import Cat from "@/models/Cat";
 import mongoose from "mongoose";
@@ -10,7 +11,6 @@ export async function GET(
   try {
     const { id } = await params;
 
-    // Validate the MongoDB ID before querying
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return Response.json(
         {
@@ -23,7 +23,6 @@ export async function GET(
 
     await connectDB();
 
-    // Find one cat using its MongoDB ID
     const cat = await Cat.findById(id);
 
     if (!cat) {
@@ -34,6 +33,32 @@ export async function GET(
         },
         { status: 404 }
       );
+    }
+
+    // Existing admin-created cats remain public.
+    // Approved user listings are also public.
+    const isPublic =
+      cat.listingType === "Admin" ||
+      cat.reviewStatus === "Approved";
+
+    if (!isPublic) {
+      const session = await auth();
+
+      const isOwner =
+        !!session?.user?.id &&
+        cat.ownerId === session.user.id;
+
+      const isAdmin = session?.user?.role === "admin";
+
+      if (!isOwner && !isAdmin) {
+        return Response.json(
+          {
+            success: false,
+            message: "Cat listing not found",
+          },
+          { status: 404 }
+        );
+      }
     }
 
     return Response.json({

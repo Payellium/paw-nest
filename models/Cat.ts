@@ -1,6 +1,6 @@
 import mongoose, { Schema, Model } from "mongoose";
 
-interface ICat {
+export interface ICat {
   name: string;
   breed: string;
   ageInMonths: number;
@@ -8,18 +8,17 @@ interface ICat {
   location: string;
   image: string;
   personality: string[];
-  adoptionStatus: string;
-
-  // Existing optional fields
+  adoptionStatus: "Available" | "Pending" | "Adopted";
+  reviewStatus: "Pending" | "Approved" | "Rejected";
   description?: string;
   vaccinated?: boolean;
   neutered?: boolean;
   specialNeeds?: boolean;
   featured?: boolean;
-
-  // New fields for user-submitted cats
-  ownerId?: string;
+  ownerId?: string | null;
   listingType: "Admin" | "User";
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const catSchema = new Schema<ICat>(
@@ -27,77 +26,71 @@ const catSchema = new Schema<ICat>(
     name: {
       type: String,
       required: true,
+      trim: true,
     },
-
     breed: {
       type: String,
       required: true,
+      trim: true,
     },
-
     ageInMonths: {
       type: Number,
       required: true,
+      min: 0,
     },
-
     gender: {
       type: String,
       required: true,
+      enum: ["Male", "Female"],
     },
-
     location: {
       type: String,
       required: true,
+      trim: true,
     },
-
     image: {
       type: String,
       required: true,
     },
-
     personality: {
       type: [String],
       required: true,
+      default: [],
     },
-
     adoptionStatus: {
       type: String,
       enum: ["Available", "Pending", "Adopted"],
       default: "Available",
     },
-
-    // Existing fields
+    reviewStatus: {
+      type: String,
+      enum: ["Pending", "Approved", "Rejected"],
+      default: "Approved",
+    },
     description: {
       type: String,
       default: "",
     },
-
     vaccinated: {
       type: Boolean,
       default: true,
     },
-
     neutered: {
       type: Boolean,
       default: true,
     },
-
     specialNeeds: {
       type: Boolean,
       default: false,
     },
-
     featured: {
       type: Boolean,
       default: false,
     },
-
-    // New: identifies the user who submitted the cat
     ownerId: {
       type: String,
       default: null,
     },
-
-    // New: identifies who created the listing
     listingType: {
       type: String,
       enum: ["Admin", "User"],
@@ -106,7 +99,7 @@ const catSchema = new Schema<ICat>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const Cat =
