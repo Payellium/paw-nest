@@ -34,7 +34,7 @@ export default function MyWishlistPage() {
             id: product.id,
             name: product.name,
             category: product.category,
-            price: formatPrice(product.price),
+            price: product.price,
             image: product.image,
         });
     };
