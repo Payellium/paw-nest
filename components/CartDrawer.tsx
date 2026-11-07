@@ -10,6 +10,8 @@ import {
 } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { useCart } from "@/context/CartContext";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const emptySubscribe = () => () => { };
 
@@ -23,7 +25,7 @@ function getServerSnapshot() {
 
 export default function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
-
+  const router = useRouter();
 
   const {
     cartItems,
@@ -39,14 +41,15 @@ export default function CartDrawer() {
   );
 
   // Convert "$24.99" into 24.99
-  const getPrice = (price: string) => {
-    return Number(price.replace(/[^0-9.]/g, "")) || 0;
+  const getPrice = (price: number) => {
+    return price;
   };
 
   // Calculate subtotal
-  const subtotal = cartItems.reduce((total, item) => {
-    return total + getPrice(item.product.price) * item.quantity;
-  }, 0);
+  const subtotal = cartItems.reduce(
+    (total, item) => total + item.product.price * item.quantity,
+    0
+  );
 
   return (
     <>
@@ -164,7 +167,7 @@ export default function CartDrawer() {
                             </h3>
 
                             <p className="mt-1 text-lg font-bold text-[#7C3AED]">
-                              {item.product.price}
+                              ৳{item.product.price.toLocaleString("en-BD")}
                             </p>
                           </div>
 
@@ -227,7 +230,7 @@ export default function CartDrawer() {
                       </span>
 
                       <span className="text-2xl font-extrabold text-[#1E293B]">
-                        ${subtotal.toFixed(2)}
+                        ৳{subtotal.toLocaleString("en-BD")}
                       </span>
                     </div>
 
@@ -236,26 +239,25 @@ export default function CartDrawer() {
                     </p>
 
                     <button
+                      onClick={() => {
+                        setIsOpen(false);
+                        router.push("/checkout");
+                      }}
                       type="button"
-                      className="w-full rounded-[18px] bg-linear-to-r
-                                 from-[#7C20FF] to-[#914DFF]
-                                 py-5 text-xl font-extrabold text-white
-                                 shadow-[0_8px_20px_rgba(124,58,237,0.18)]
-                                 transition-all duration-300
-                                 hover:-translate-y-1
-                                 hover:shadow-[0_12px_25px_rgba(124,58,237,0.28)]"
+                      className="w-full rounded-[18px] bg-linear-to-r from-[#7C20FF] to-[#914DFF] py-5 text-xl font-extrabold text-white shadow-[0_8px_20px_rgba(124,58,237,0.18)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(124,58,237,0.28)]"
                     >
                       Proceed to Checkout
                     </button>
 
-                    <button
+                    <Link
                       type="button"
                       onClick={() => setIsOpen(false)}
-                      className="mt-4 w-full text-center text-lg font-bold
-                                 text-[#7C3AED] transition hover:text-[#4C1D95]"
+                      href="/shop"
+                      className="mt-4 w-full flex items-center justify-center text-lg font-bold
+                                 text-[#7C3AED] transition hover:text-[#4C1D95] hover:underline"
                     >
                       Continue Shopping
-                    </button>
+                    </Link>
                   </div>
                 </>
               )}

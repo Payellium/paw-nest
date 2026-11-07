@@ -5,16 +5,16 @@ import {
     createContext,
     useContext,
     useSyncExternalStore,
+    useCallback,
     type ReactNode,
 } from "react";
 
-export interface CartProduct {
-    id: number;
-    name: string;
-    category: string;
-    price: string;
-    image: string;
-}
+import type { Product } from "@/types/product";
+
+export type CartProduct = Pick<
+    Product,
+    "id" | "name" | "category" | "price" | "image"
+>;
 
 export interface CartItem {
     product: CartProduct;
@@ -59,9 +59,52 @@ function getCartSnapshot(): CartItem[] {
         if (rawCart) {
             const parsedCart = JSON.parse(rawCart);
 
-            cachedCart = Array.isArray(parsedCart)
-                ? parsedCart
-                : EMPTY_CART;
+            if (!Array.isArray(parsedCart)) {
+                cachedCart = EMPTY_CART;
+                return cachedCart;
+            }
+
+            // Convert old string prices into numbers.
+            const migratedCart: CartItem[] = parsedCart
+                .filter(
+                    (item) =>
+                        item?.product &&
+                        typeof item.product.id === "number"
+                )
+                .map((item) => {
+                    const oldPrice = item.product.price;
+
+                    const numericPrice =
+                        typeof oldPrice === "number"
+                            ? oldPrice
+                            : Number(
+                                String(oldPrice).replace(/[^0-9.]/g, "")
+                            );
+
+                    return {
+                        ...item,
+                        product: {
+                            ...item.product,
+                            price: Number.isFinite(numericPrice)
+                                ? numericPrice
+                                : 0,
+                        },
+                        quantity: Math.max(
+                            1,
+                            Number(item.quantity) || 1
+                        ),
+                    };
+                });
+
+            cachedCart = migratedCart;
+
+            // Save migrated data back to localStorage.
+            const migratedRawCart = JSON.stringify(migratedCart);
+
+            if (migratedRawCart !== rawCart) {
+                localStorage.setItem(STORAGE_KEY, migratedRawCart);
+                cachedRawCart = migratedRawCart;
+            }
         } else {
             cachedCart = EMPTY_CART;
         }
@@ -170,9 +213,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         saveCart(updatedItems);
     };
 
-    const clearCart = () => {
+    const clearCart = useCallback(() => {
         saveCart([]);
-    };
+    }, []);
 
     const cartCount = cartItems.reduce(
         (total, item) => total + item.quantity,

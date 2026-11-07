@@ -22,12 +22,49 @@ import { IoMdSettings } from "react-icons/io";
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [profileImage, setProfileImage] = useState("");
 
   const { data: session, status } = useSession();
 
+  // Keep Navbar profile picture synchronized with the database
+  useEffect(() => {
+    if (status === "authenticated") {
+      const fetchLatestProfile = async () => {
+        try {
+          const response = await fetch("/api/my-account/profile", {
+            cache: "no-store",
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            setProfileImage(data.user.image || "");
+          }
+        } catch (error) {
+          console.error("Failed to refresh Navbar profile image:", error);
+        }
+      };
+
+      fetchLatestProfile();
+    }
+
+    const handleProfileUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent<{ image: string }>;
+      setProfileImage(customEvent.detail.image || "");
+    };
+
+    window.addEventListener("pawnest-profile-updated", handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener(
+        "pawnest-profile-updated",
+        handleProfileUpdate
+      );
+    };
+  }, [status]);
   const isLoggedIn = status === "authenticated";
   const userName = session?.user?.name || "My Account";
-  const userImage = session?.user?.image;
+  const userImage = profileImage || session?.user?.image || "";
   const userInitial = userName.charAt(0).toUpperCase();
 
   // Close profile dropdown when clicking outside
@@ -61,9 +98,8 @@ const Navbar = () => {
   // Profile dropdown
   const renderProfileDropdown = (mobile = false) => (
     <div
-      className={`absolute right-0 top-full z-[60] mt-3 overflow-hidden rounded-2xl border border-purple-100 bg-white shadow-[0_12px_35px_rgba(41,32,68,0.15)] ${
-        mobile ? "w-full" : "w-64"
-      }`}
+      className={`absolute right-0 top-full z-[60] mt-3 overflow-hidden rounded-2xl border border-purple-100 bg-white shadow-[0_12px_35px_rgba(41,32,68,0.15)] ${mobile ? "w-full" : "w-64"
+        }`}
     >
       <div className="border-b border-gray-100 bg-[#F8F5FF] px-5 py-4">
         <p className="truncate text-center text-xl font-extrabold text-[#6b52b8]">
@@ -76,18 +112,18 @@ const Navbar = () => {
       </div>
 
       <div className="p-2">
-        
+
 
         <Link
-          href="/my-account/profile"
+          href="/my-account"
           onClick={closeMenu}
           className="flex items-center gap-3 rounded-xl px-4 py-3 text-[20px] font-semibold text-[#50607A] transition hover:bg-[#F3EDFC] hover:text-[#7C3AED]"
         >
           <FaUser className="text-[#7C3AED]" />
-          My Profile
+          My Account
         </Link>
         <Link
-          href="/my-account"
+          href="/settings"
           onClick={closeMenu}
           className="flex items-center gap-3 rounded-xl px-4 py-3 text-[20px] font-semibold text-[#50607A] transition hover:bg-[#F3EDFC] hover:text-[#7C3AED]"
         >
@@ -118,9 +154,8 @@ const Navbar = () => {
         aria-label="Open profile menu"
         aria-expanded={profileOpen}
         aria-haspopup="true"
-        className={`flex items-center gap-2 rounded-full transition hover:opacity-80 ${
-          mobile ? "w-full justify-between" : ""
-        }`}
+        className={`flex items-center gap-2 rounded-full transition hover:opacity-80 ${mobile ? "w-full justify-between" : ""
+          }`}
       >
         <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-[#7C3AED] bg-[#E9D8FD] shadow-sm">
           {userImage ? (
@@ -143,16 +178,14 @@ const Navbar = () => {
             </span>
 
             <FaChevronDown
-              className={`text-sm text-[#7C3AED] transition-transform ${
-                profileOpen ? "rotate-180" : ""
-              }`}
+              className={`text-sm text-[#7C3AED] transition-transform ${profileOpen ? "rotate-180" : ""
+                }`}
             />
           </>
         ) : (
           <FaChevronDown
-            className={`text-xs text-[#7C3AED] transition-transform ${
-              profileOpen ? "rotate-180" : ""
-            }`}
+            className={`text-xs text-[#7C3AED] transition-transform ${profileOpen ? "rotate-180" : ""
+              }`}
           />
         )}
       </button>

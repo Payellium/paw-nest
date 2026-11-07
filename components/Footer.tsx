@@ -56,7 +56,7 @@ export default function Footer() {
               </a>
 
               <a
-                href="#"
+                href="https://www.facebook.com/profile.php?id=61596063899189"
                 aria-label="Facebook"
                 className="flex h-14 w-14 items-center justify-center rounded-[18px] bg-[#1D2A42] text-[20px] text-[#CBD5E1] transition-all duration-300 hover:-translate-y-1 hover:bg-[#7C3AED] hover:text-white"
               >
@@ -250,13 +250,13 @@ export default function Footer() {
 
               {/* Phone */}
               <a
-                href="tel:+18007296378"
+                href=""
                 className="flex items-start gap-5 text-[19px] font-medium text-[#94A6C2] transition-colors hover:text-white"
               >
                 <FaPhone className="mt-1 shrink-0 text-[18px] text-[#A855F7]" />
-
+                    90258163
                 <span>
-                  +1 (800) PAW-NEST
+                  
                 </span>
               </a>
 
@@ -267,9 +267,9 @@ export default function Footer() {
                 <FaMapMarkerAlt className="mt-1 shrink-0 text-[20px] text-[#A855F7]" />
 
                 <span>
-                  123 Pawsome Avenue
+                  Hossain Tower, Housebuilding
                   <br />
-                  Austin, TX 78701
+                  Uttara, Dhaka 1230
                 </span>
 
               </div>
@@ -290,9 +290,7 @@ export default function Footer() {
 
           {/* Copyright */}
           <p className="text-[17px] font-medium text-[#94A6C2]">
-            © 2024 PawNest. All rights reserved. Made with{" "}
-            <span className="text-[#EC4899]">♥</span>{" "}
-            for pets everywhere.
+            © 2026 PawNest. All rights reserved for Payel & Shela.
           </p>
 
 
