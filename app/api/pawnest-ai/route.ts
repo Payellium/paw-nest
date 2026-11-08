@@ -2,10 +2,6 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 const PAWNEST_AI_INSTRUCTIONS = `
 You are PawNest AI, a friendly and responsible cat-care assistant.
 
@@ -33,70 +29,83 @@ Start conversations warmly and explain things in beginner-friendly language.
 `;
 
 export async function POST(request: Request) {
-  try {
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json(
-        { error: "OpenAI API key is not configured." },
-        { status: 500 }
-      );
+    try {
+        const apiKey = process.env.OPENAI_API_KEY;
+
+        // Check the API key before initializing OpenAI.
+        if (!apiKey) {
+            return NextResponse.json(
+                {
+                    error: "PawNest AI is temporarily unavailable. Please try again later.",
+                },
+                { status: 503 }
+            );
+        }
+
+        // Initialize OpenAI only when the API is actually requested.
+        const openai = new OpenAI({
+            apiKey,
+        });
+
+        const body = await request.json();
+        const messages = body.messages;
+
+        if (!Array.isArray(messages) || messages.length === 0) {
+            return NextResponse.json(
+                { error: "Please provide a message." },
+                { status: 400 }
+            );
+        }
+
+        if (messages.length > 20) {
+            return NextResponse.json(
+                {
+                    error: "Conversation is too long. Please start a new chat.",
+                },
+                { status: 400 }
+            );
+        }
+
+        const validMessages = messages.every(
+            (message) =>
+                message &&
+                ["user", "assistant"].includes(message.role) &&
+                typeof message.content === "string" &&
+                message.content.trim().length > 0 &&
+                message.content.length <= 4000
+        );
+
+        if (!validMessages) {
+            return NextResponse.json(
+                { error: "Invalid message format." },
+                { status: 400 }
+            );
+        }
+
+        const conversation = messages.map((message) => ({
+            role: message.role as "user" | "assistant",
+            content: message.content,
+        }));
+
+        const response = await openai.responses.create({
+            model: "gpt-5-mini",
+            instructions: PAWNEST_AI_INSTRUCTIONS,
+            input: conversation,
+            max_output_tokens: 700,
+        });
+
+        return NextResponse.json({
+            reply: response.output_text,
+        });
+
+    } catch (error) {
+        console.error("PawNest AI API error:", error);
+
+        return NextResponse.json(
+            {
+                error: "Sorry, PawNest AI could not respond right now. Please try again.",
+            },
+            { status: 500 }
+        );
     }
-
-    const body = await request.json();
-    const messages = body.messages;
-
-    if (!Array.isArray(messages) || messages.length === 0) {
-      return NextResponse.json(
-        { error: "Please provide a message." },
-        { status: 400 }
-      );
-    }
-
-    if (messages.length > 20) {
-      return NextResponse.json(
-        { error: "Conversation is too long. Please start a new chat." },
-        { status: 400 }
-      );
-    }
-
-    const validMessages = messages.every(
-      (message) =>
-        message &&
-        ["user", "assistant"].includes(message.role) &&
-        typeof message.content === "string" &&
-        message.content.trim().length > 0 &&
-        message.content.length <= 4000
-    );
-
-    if (!validMessages) {
-      return NextResponse.json(
-        { error: "Invalid message format." },
-        { status: 400 }
-      );
-    }
-
-    const conversation = messages.map((message) => ({
-      role: message.role as "user" | "assistant",
-      content: message.content,
-    }));
-
-    const response = await openai.responses.create({
-      model: "gpt-5-mini",
-      instructions: PAWNEST_AI_INSTRUCTIONS,
-      input: conversation,
-      max_output_tokens: 700,
-    });
-
-    return NextResponse.json({
-      reply: response.output_text,
-    });
-  } catch (error) {
-    console.error("PawNest AI API error:", error);
-
-    return NextResponse.json(
-      {
-        error: "Sorry, PawNest AI could not respond right now. Please try again.",
-      },
-      { status: 500 }
-    );
-  }
 }
