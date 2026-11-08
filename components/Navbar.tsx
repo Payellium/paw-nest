@@ -123,7 +123,7 @@ const Navbar = () => {
           My Account
         </Link>
         <Link
-          href="/settings"
+          href="/my-account/settings"
           onClick={closeMenu}
           className="flex items-center gap-3 rounded-xl px-4 py-3 text-[20px] font-semibold text-[#50607A] transition hover:bg-[#F3EDFC] hover:text-[#7C3AED]"
         >
@@ -198,49 +198,56 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 w-full border-b border-white/20 bg-white/50 backdrop-blur-md">
       <div className="mx-auto flex h-27.5 w-full max-w-[1920px] items-center justify-between px-6 md:px-10 lg:px-12">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-4">
+        <Link href="/" className="flex items-center gap-3">
           <div className="flex h-15.5 w-15.5 items-center justify-center rounded-3xl bg-linear-to-br from-[#8B5CF6] to-[#29B6F6] shadow-[0_5px_12px_rgba(99,102,241,0.25)]">
             <FaPaw className="text-[27px] text-[#28345D]" />
           </div>
 
-          <span className="bg-[#7C3AED] bg-clip-text text-[36px] font-extrabold tracking-[-1.5px] text-transparent">
+          <span className="bg-[#7C3AED] bg-clip-text text-[24px] lg:text-[30px] xl:text-[36px] font-extrabold tracking-[-1.5px] text-transparent">
             Paw<span className="text-[#00A9F4]">Nest</span>
           </span>
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden items-center gap-12 lg:flex">
+        <div className="hidden items-center gap-6 xl:gap-12 lg:flex">
           <Link
             href="/"
-            className="text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
+            className="text-[16px] xl:text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
           >
             Home
           </Link>
 
           <Link
             href="/adopt"
-            className="text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
+            className="text-[16px] xl:text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
           >
             Adopt
           </Link>
 
           <Link
+            href="/vaccination"
+            className="text-[16px] xl:text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
+          >
+            Vaccination
+          </Link>
+
+          <Link
             href="/pawnest-ai"
-            className="text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
+            className="text-[16px] xl:text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
           >
             PawNest AI
           </Link>
 
           <Link
             href="/shop"
-            className="text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
+            className="text-[16px] xl:text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
           >
             Shop
           </Link>
 
           <Link
             href="/about"
-            className="text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
+            className="text-[16px] xl:text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
           >
             About
           </Link>
@@ -312,6 +319,14 @@ const Navbar = () => {
               className="text-lg font-semibold text-[#50607A]"
             >
               Adopt
+            </Link>
+
+            <Link
+              href="/vaccination"
+              onClick={closeMenu}
+              className="text-lg font-semibold text-[#50607A]"
+            >
+              Vaccination
             </Link>
 
             <Link

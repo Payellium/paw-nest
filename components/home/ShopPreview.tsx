@@ -113,18 +113,18 @@ const ShopPreview = () => {
             PREMIUM SUPPLIES
           </p>
 
-          <h2 className="nunito-font text-[42px] font-extrabold leading-tight tracking-[-1px] text-[#1E293B] sm:text-[52px] lg:text-[58px]">
-            Shop for Your Pet
+          <h2 className="nunito-font text-[36px] font-extrabold leading-tight tracking-[-1px] text-[#1E293B] sm:text-[44px] lg:text-[52px]">
+            Shop for Your <span className="text-purple-500">Pet</span>
           </h2>
 
-          <p className="mx-auto mt-6 max-w-[800px] text-[18px] font-medium leading-8 text-[#64748B] sm:text-[22px] sm:leading-10">
+          <p className="mx-auto mt-5 max-w-[800px] text-[18px] font-medium leading-8 text-[#64748B] sm:text-[22px] sm:leading-10">
             Everything your companion needs, curated with love and backed by
             our quality guarantee.
           </p>
         </div>
 
         {/* ================= CATEGORIES ================= */}
-        <div className="mt-24 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+        <div className="mt-20 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
           {categories.map((category) => (
             <button
               type="button"

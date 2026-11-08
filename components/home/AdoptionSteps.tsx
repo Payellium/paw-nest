@@ -50,16 +50,16 @@ const steps = [
 
 export default function AdoptionSteps() {
   return (
-    <section className="relative z-10 px-6 py-20 sm:px-8 lg:px-12">
+    <section className="relative z-10 px-6 py-20 sm:px-8 lg:px-10">
 
       {/* Heading */}
       <div className="mx-auto max-w-212.5 text-center">
 
-        <h2 className="text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-5xl lg:text-[54px]">
-          How Adoption Works
+        <h2 className="text-3xl font-extrabold tracking-tight text-[#1E293B] sm:text-4xl lg:text-[50px]">
+          How <span className="text-purple-500">Adoption</span> Works
         </h2>
 
-        <p className="mx-auto mt-7 max-w-200 text-base leading-8 text-[#647894] sm:text-lg md:text-[24px] md:leading-10">
+        <p className="mx-auto mt-5 max-w-200 text-base leading-8 text-[#647894] sm:text-lg md:text-[24px] md:leading-10">
           Our thoughtful process makes bringing home a new family member
           easy, transparent, and joyful.
         </p>
@@ -67,7 +67,8 @@ export default function AdoptionSteps() {
       </div>
 
       {/* Cards */}
-      <div className="mx-auto mt-24 grid max-w-[1800px] grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mx-auto mt-20
+        grid max-w-[1800px] grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
 
         {steps.map((step) => {
           const Icon = step.icon;

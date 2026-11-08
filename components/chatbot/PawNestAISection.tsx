@@ -55,12 +55,12 @@ export default function PawNestAISection() {
             SECTION INTRO
         ========================== */}
         <div className="mx-auto mb-14 max-w-3xl text-center">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-100 bg-white/80 px-4 py-2 text-xl font-semibold text-sky-600 shadow-sm backdrop-blur">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-sky-100 bg-white/80 px-4 py-2 text-lg font-semibold text-sky-600 shadow-sm backdrop-blur">
             <span>✨</span>
             <span>Meet PawNest AI</span>
           </div>
 
-          <h2 className="text-4xl font-extrabold leading-tight tracking-tight text-slate-800 md:text-5xl lg:text-6xl">
+          <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-slate-800 md:text-4xl lg:text-5xl xl:text-6xl">
             A smarter way to{" "}
             <span className="bg-linear-to-r from-sky-500 via-purple-500 to-pink-400 bg-clip-text text-transparent">
               care for your cat
@@ -68,7 +68,7 @@ export default function PawNestAISection() {
             
           </h2>
 
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
             Have questions about your cats health, behavior, nutrition, or
             everyday care? PawNest AI gives you helpful general information
             whenever you need it.

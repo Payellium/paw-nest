@@ -37,7 +37,7 @@ const CatCategories = () => {
         },
     ];
     return (
-        <section className="relative z-10 px-6 py-20 sm:px-8 lg:px-10">
+        <section className="relative z-10 px-5 py-20 sm:px-8 lg:px-8">
 
             {/* Heading */}
             <div className="mx-auto max-w-225 text-center">
@@ -46,11 +46,11 @@ const CatCategories = () => {
                     Find Your Match
                 </p>
 
-                <h2 className="text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-5xl lg:text-[54px]">
+                <h2 className="text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-4xl lg:text-[48px]">
                     Browse by Category
                 </h2>
 
-                <p className="mx-auto mt-6 max-w-190 text-base leading-7 text-[#607492] sm:text-lg sm:leading-9">
+                <p className="mx-auto mt-4 max-w-190 text-base leading-7 text-[#607492] sm:text-lg sm:leading-9">
                     Thousands of cats are looking for a loving home.
                     Explore by type to find your perfect companion.
                 </p>
@@ -58,7 +58,7 @@ const CatCategories = () => {
             </div>
 
             {/* Categories */}
-            <div className="mx-auto mt-20 grid max-w-[1810px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <div className="mx-auto mt-10 grid max-w-[1810px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
 
                 {categories.map((category) => (
                     <Link

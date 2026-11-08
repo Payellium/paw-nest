@@ -118,11 +118,11 @@ export default function FeaturedPets() {
             READY TO ADOPT
           </p>
 
-          <h2 className="mt-3 text-[42px] font-extrabold tracking-[-1.5px] text-[#1E293B] sm:text-[52px]">
-            Featured Cats
+          <h2 className="mt-3 text-[36px] font-extrabold tracking-[-1.5px] text-[#1E293B] sm:text-[48px]">
+            Featured <span className="text-purple-500">Cats</span>
           </h2>
 
-          <p className="mx-auto mt-6 max-w-[760px] text-[18px] leading-8 text-[#637A9B] sm:text-[21px]">
+          <p className="mx-auto mt-4 max-w-[760px] text-[18px] leading-8 text-[#637A9B] sm:text-[21px]">
             Every cat deserves a loving home. Browse our featured cats and
             find your new best friend today.
           </p>
@@ -131,7 +131,7 @@ export default function FeaturedPets() {
 
         {/* ================= BREED FILTER ================= */}
 
-        <div className="mt-16 flex flex-wrap justify-center gap-3 sm:gap-4">
+        <div className="mt-10 flex flex-wrap justify-center gap-3 sm:gap-4">
 
           {breeds.map((breed) => {
             const isActive = activeBreed === breed;

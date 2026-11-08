@@ -57,11 +57,11 @@ const SuccessStories = () => {
                     HAPPY ENDINGS
                 </p>
 
-                <h2 className="nunito-font text-4xl font-extrabold tracking-[-1px] text-[#1E293B] sm:text-5xl lg:text-[56px]">
-                    Success Stories
+                <h2 className="nunito-font text-3xl font-extrabold tracking-[-1px] text-[#1E293B] sm:text-4xl lg:text-[50px]">
+                    Success <span className="text-purple-500">Stories</span>
                 </h2>
 
-                <p className="mx-auto mt-7 max-w-190 text-lg font-medium leading-8 text-[#647A9C] sm:text-xl sm:leading-10">
+                <p className="mx-auto mt-5 max-w-190 text-lg font-medium leading-8 text-[#647A9C] sm:text-xl sm:leading-10">
                     Real families, real love. Read how PawNest helped hundreds of pets
                     find their forever homes.
                 </p>
@@ -69,7 +69,7 @@ const SuccessStories = () => {
             </div>
 
             {/* Stories */}
-            <div className="relative z-10 mx-auto mt-24 grid max-w-450 gap-8 lg:grid-cols-3">
+            <div className="relative z-10 mx-auto mt-20 grid max-w-450 gap-8 lg:grid-cols-3">
 
                 {stories.map((story) => (
                     <article

@@ -83,7 +83,7 @@ const Hero = () => {
             delay: 0.15,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="max-w-300 nunito-font text-[45px]  font-extrabold leading-[1.05] tracking-[-1.5px] text-[#1E293B] sm:text-[54px] md:text-[60px] lg:text-[64px] xl:text-[78px]"
+          className="max-w-300 nunito-font text-[45px]  font-extrabold leading-[1.05] tracking-[-1.5px] text-[#1E293B] sm:text-[36px] md:text-[44px] lg:text-[54px] xl:text-[64px]"
         >
           Find Your Perfect{" "}
 
@@ -165,7 +165,7 @@ const Hero = () => {
 
           <Link
             href="/adopt"
-            className="group flex h-25 w-full max-w-85.75 items-center justify-center gap-4 rounded-[25px] bg-linear-to-r from-[#7C20FF] to-[#914DFF] text-2xl font-bold text-white shadow-[0_12px_30px_rgba(124,58,237,0.20)] transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_18px_40px_rgba(124,58,237,0.30)]"
+            className="group flex h-10 lg:h-15 xl:h-25 w-full max-w-85.75 items-center justify-center gap-4 rounded-[25px] bg-linear-to-r from-[#7C20FF] to-[#914DFF] text-lg lg:text-xl xl:text-2xl font-bold text-white shadow-[0_12px_30px_rgba(124,58,237,0.20)] transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_18px_40px_rgba(124,58,237,0.30)]"
           >
             <motion.span
               whileHover={{
@@ -186,7 +186,7 @@ const Hero = () => {
 
           <Link
             href="/shop"
-            className="group flex h-25 w-full max-w-88.25 items-center justify-center gap-4 rounded-[25px] border-[3px] border-[#DDD6FE] bg-white text-2xl font-extrabold text-[#6519D8] transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:border-[#C4B5FD] hover:shadow-[0_15px_35px_rgba(124,58,237,0.14)]"
+            className="group flex h-10 lg:h-15 xl:h-25 w-full max-w-88.25 items-center justify-center gap-4 rounded-[25px] border-[3px] border-[#DDD6FE] bg-white text-lg lg:text-xl xl:text-2xl font-extrabold text-[#6519D8] transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:border-[#C4B5FD] hover:shadow-[0_15px_35px_rgba(124,58,237,0.14)]"
           >
             <motion.span
               whileHover={{
