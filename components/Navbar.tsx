@@ -196,7 +196,7 @@ const Navbar = () => {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-white/20 bg-white/50 backdrop-blur-md">
-      <div className="mx-auto flex h-27.5 w-full max-w-[1920px] items-center justify-between px-6 md:px-10 lg:px-12">
+      <div className="mx-auto flex h-27.5 w-full max-w-[1920px] items-center justify-between px-4 md:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3">
           <div className="flex h-15.5 w-15.5 items-center justify-center rounded-3xl bg-linear-to-br from-[#8B5CF6] to-[#29B6F6] shadow-[0_5px_12px_rgba(99,102,241,0.25)]">
@@ -215,6 +215,13 @@ const Navbar = () => {
             className="text-[16px] xl:text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
           >
             Home
+          </Link>
+
+          <Link
+            href="/about"
+            className="text-[16px] xl:text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
+          >
+            About
           </Link>
 
           <Link
@@ -244,36 +251,29 @@ const Navbar = () => {
           >
             Shop
           </Link>
-
-          <Link
-            href="/about"
-            className="text-[16px] xl:text-[20px] font-semibold text-[#50607A] transition hover:text-[#7C3AED]"
-          >
-            About
-          </Link>
         </div>
 
         {/* Desktop Actions */}
-        <div className="hidden items-center gap-4 md:flex">
+        <div className="hidden items-center gap-3 md:flex">
           <CartDrawer />
 
           {status === "loading" ? (
-            <div className="h-11 w-11 animate-pulse rounded-full bg-purple-100" />
+            <div className="h-10 w-10 animate-pulse rounded-full bg-purple-100" />
           ) : isLoggedIn ? (
             renderProfileAvatar()
           ) : (
             <>
               <Link
                 href="/login"
-                className="flex h-15.5 w-35 items-center justify-center gap-3 rounded-[22px] bg-linear-to-r from-[#7C3AED] to-[#12A9F4] text-[20px] font-bold text-white shadow-[0_5px_14px_rgba(124,58,237,0.2)] transition hover:scale-[1.02]"
+                className="flex h-12 w-28 items-center justify-center gap-2 rounded-lg bg-linear-to-r from-[#7C3AED] to-[#12A9F4] text-[20px] font-bold text-white shadow-[0_5px_14px_rgba(124,58,237,0.2)] transition hover:scale-[1.02]"
               >
-                <FaSignInAlt className="text-[21px]" />
+                <FaSignInAlt className="text-[16px]" />
                 Login
               </Link>
 
               <Link
                 href="/register"
-                className="flex h-15.5 items-center justify-center gap-2 rounded-[22px] border border-[#7C3AED] px-5 text-[17px] font-bold text-[#7C3AED] transition hover:bg-[#7C3AED] hover:text-white"
+                className="flex h-12 items-center justify-center gap-2 rounded-lg border border-[#7C3AED] px-3 text-[17px] font-bold text-[#7C3AED] transition hover:bg-[#7C3AED] hover:text-white"
               >
                 <FaUserPlus />
                 Register
@@ -314,6 +314,14 @@ const Navbar = () => {
             </Link>
 
             <Link
+              href="/about"
+              onClick={closeMenu}
+              className="text-lg font-semibold text-[#50607A]"
+            >
+              About
+            </Link>
+
+            <Link
               href="/adopt"
               onClick={closeMenu}
               className="text-lg font-semibold text-[#50607A]"
@@ -345,13 +353,7 @@ const Navbar = () => {
               Shop
             </Link>
 
-            <Link
-              href="/about"
-              onClick={closeMenu}
-              className="text-lg font-semibold text-[#50607A]"
-            >
-              About
-            </Link>
+            
 
             <div className="flex items-center gap-3">
               <CartDrawer />

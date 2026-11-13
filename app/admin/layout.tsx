@@ -5,14 +5,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
+
 const navigation = [
     { label: "Overview", href: "/admin", icon: "▦" },
-    { label: "Listing Reviews", href: "/admin/reviews", icon: "✓" },
     { label: "Adoption Requests", href: "/admin/adoption-requests", icon: "💌" },
     { label: "All Cats", href: "/admin/cats", icon: "🐱" },
+    { label: "Vaccination Requests", href: "/admin/vaccination-bookings", icon: "💉" },
     { label: "Users", href: "/admin/users", icon: "♙" },
     { label: "Settings", href: "/admin/settings", icon: "⚙" },
 ];
+
 
 export default function AdminLayout({
     children,

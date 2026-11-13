@@ -1,6 +1,9 @@
-
-import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
+import { auth } from "@/auth";
+import { connectDB } from "@/lib/mongodb";
+import AIConversation from "@/models/AIConversation";
 
 const PAWNEST_AI_INSTRUCTIONS = `
 You are PawNest AI, a friendly and responsible cat-care assistant.
@@ -29,83 +32,144 @@ Start conversations warmly and explain things in beginner-friendly language.
 `;
 
 export async function POST(request: Request) {
-    try {
-        const apiKey = process.env.OPENAI_API_KEY;
+  try {
+    // 1. Verify the logged-in user.
+    const session = await auth();
 
-        // Check the API key before initializing OpenAI.
-        if (!apiKey) {
-            return NextResponse.json(
-                {
-                    error: "PawNest AI is temporarily unavailable. Please try again later.",
-                },
-                { status: 503 }
-            );
-        }
-
-        // Initialize OpenAI only when the API is actually requested.
-        const openai = new OpenAI({
-            apiKey,
-        });
-
-        const body = await request.json();
-        const messages = body.messages;
-
-        if (!Array.isArray(messages) || messages.length === 0) {
-            return NextResponse.json(
-                { error: "Please provide a message." },
-                { status: 400 }
-            );
-        }
-
-        if (messages.length > 20) {
-            return NextResponse.json(
-                {
-                    error: "Conversation is too long. Please start a new chat.",
-                },
-                { status: 400 }
-            );
-        }
-
-        const validMessages = messages.every(
-            (message) =>
-                message &&
-                ["user", "assistant"].includes(message.role) &&
-                typeof message.content === "string" &&
-                message.content.trim().length > 0 &&
-                message.content.length <= 4000
-        );
-
-        if (!validMessages) {
-            return NextResponse.json(
-                { error: "Invalid message format." },
-                { status: 400 }
-            );
-        }
-
-        const conversation = messages.map((message) => ({
-            role: message.role as "user" | "assistant",
-            content: message.content,
-        }));
-
-        const response = await openai.responses.create({
-            model: "gpt-5-mini",
-            instructions: PAWNEST_AI_INSTRUCTIONS,
-            input: conversation,
-            max_output_tokens: 700,
-        });
-
-        return NextResponse.json({
-            reply: response.output_text,
-        });
-
-    } catch (error) {
-        console.error("PawNest AI API error:", error);
-
-        return NextResponse.json(
-            {
-                error: "Sorry, PawNest AI could not respond right now. Please try again.",
-            },
-            { status: 500 }
-        );
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Please log in to use PawNest AI." },
+        { status: 401 },
+      );
     }
+
+    // 2. Check Gemini API configuration.
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      return NextResponse.json(
+        {
+          error:
+            "PawNest AI is temporarily unavailable. Please try again later.",
+        },
+        { status: 503 },
+      );
+    }
+
+    // 3. Validate the incoming message.
+    const body = await request.json();
+
+    const message = typeof body.message === "string" ? body.message.trim() : "";
+
+    const conversationId = body.conversationId;
+
+    if (!message || message.length > 4000) {
+      return NextResponse.json(
+        { error: "Please provide a valid message." },
+        { status: 400 },
+      );
+    }
+
+    await connectDB();
+
+    // 4. Load an existing conversation only if it belongs to this user.
+    let existingConversation = null;
+
+    if (conversationId) {
+      if (
+        typeof conversationId !== "string" ||
+        !mongoose.Types.ObjectId.isValid(conversationId)
+      ) {
+        return NextResponse.json(
+          { error: "Invalid conversation ID." },
+          { status: 400 },
+        );
+      }
+
+      existingConversation = await AIConversation.findOne({
+        _id: conversationId,
+        userId: session.user.id,
+      });
+
+      if (!existingConversation) {
+        return NextResponse.json(
+          { error: "Conversation not found." },
+          { status: 404 },
+        );
+      }
+    }
+
+    // 5. Prepare conversation history for Gemini.
+    const previousMessages = existingConversation
+      ? (existingConversation.messages.slice(-19) as {
+          role: "user" | "assistant";
+          content: string;
+        }[])
+      : [];
+
+    const conversation = [
+      ...previousMessages.map((item) => ({
+        role: item.role === "assistant" ? "model" : "user",
+        parts: [{ text: item.content }],
+      })),
+      {
+        role: "user",
+        parts: [{ text: message }],
+      },
+    ];
+
+    // 6. Generate the AI response.
+    const ai = new GoogleGenAI({ apiKey });
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash-lite",
+      contents: conversation,
+      config: {
+        systemInstruction: PAWNEST_AI_INSTRUCTIONS,
+        maxOutputTokens: 700,
+      },
+    });
+
+    const reply =
+      response.text ||
+      "I'm sorry, I couldn't generate a response. Please try again.";
+
+    // 7. Save the messages in MongoDB.
+    let savedConversation;
+
+    if (existingConversation) {
+      existingConversation.messages.push(
+        { role: "user", content: message },
+        { role: "assistant", content: reply },
+      );
+
+      savedConversation = await existingConversation.save();
+    } else {
+      savedConversation = await AIConversation.create({
+        userId: session.user.id,
+        title: message.slice(0, 60),
+        messages: [
+          { role: "user", content: message },
+          { role: "assistant", content: reply },
+        ],
+      });
+    }
+
+    // 8. Return the reply and conversation ID.
+    return NextResponse.json({
+      success: true,
+      reply,
+      conversationId: savedConversation._id.toString(),
+    });
+  } catch (error) {
+    console.error("PawNest AI API error:", error);
+
+    return NextResponse.json(
+      {
+        error:
+          "Sorry, PawNest AI could not respond right now. Please try again.",
+      },
+      { status: 500 },
+    );
+  }
 }

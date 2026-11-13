@@ -2,12 +2,24 @@
 "use client";
 
 import GlobalPawBackground from "@/components/GlobalPawBackground";
+import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 type Message = {
     id: number;
     role: "user" | "assistant";
     content: string;
+};
+
+type SavedConversation = {
+    _id: string;
+    title: string;
+    messages: {
+        role: "user" | "assistant";
+        content: string;
+    }[];
+    createdAt: string;
+    updatedAt: string;
 };
 
 const suggestions = [
@@ -24,6 +36,11 @@ export default function PawNestAIPage() {
     const [isTyping, setIsTyping] = useState(false);
     const [apiError, setApiError] = useState("");
 
+    const [conversations, setConversations] = useState<SavedConversation[]>([]);
+    const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+    const [historyLoading, setHistoryLoading] = useState(true);
+    const [loginRequired, setLoginRequired] = useState(false);
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Automatically scroll to the latest message.
@@ -34,6 +51,56 @@ export default function PawNestAIPage() {
         });
     }, [messages, isTyping]);
 
+    // Load the logged-in user's saved conversations.
+    useEffect(() => {
+        const loadConversations = async () => {
+            try {
+                const response = await fetch("/api/pawnest-ai/conversations");
+                const data = await response.json();
+
+                if (response.status === 401) {
+                    setLoginRequired(true);
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Unable to load chat history.");
+                }
+
+                const savedConversations: SavedConversation[] =
+                    data.conversations || [];
+
+                setConversations(savedConversations);
+
+                // Restore the most recently updated conversation.
+                if (savedConversations.length > 0) {
+                    const latestConversation = savedConversations[0];
+
+                    setCurrentConversationId(latestConversation._id);
+
+                    setMessages(
+                        latestConversation.messages.map((item, index) => ({
+                            ...item,
+                            id: Date.now() + index,
+                        }))
+                    );
+                }
+            } catch (error) {
+                console.error("Unable to load PawNest AI history:", error);
+
+                setApiError(
+                    error instanceof Error
+                        ? error.message
+                        : "Unable to load your chat history."
+                );
+            } finally {
+                setHistoryLoading(false);
+            }
+        };
+
+        loadConversations();
+    }, []);
+
     // Start a fresh conversation.
     const handleNewChat = () => {
         if (isTyping) return;
@@ -41,10 +108,76 @@ export default function PawNestAIPage() {
         setMessages([]);
         setMessage("");
         setApiError("");
+        setCurrentConversationId(null);
         setSidebarOpen(false);
     };
 
+
+    const handleOpenConversation = (conversation: SavedConversation) => {
+        if (isTyping) return;
+
+        setCurrentConversationId(conversation._id);
+
+        setMessages(
+            conversation.messages.map((item, index) => ({
+                ...item,
+                id: Date.now() + index,
+            }))
+        );
+
+        setMessage("");
+        setApiError("");
+        setSidebarOpen(false);
+    };
+
+
+    const handleDeleteConversation = async (conversationId: string) => {
+        if (isTyping) return;
+
+        const confirmed = window.confirm(
+            "Are you sure you want to delete this conversation? This cannot be undone."
+        );
+
+        if (!confirmed) return;
+
+        try {
+            const response = await fetch(
+                `/api/pawnest-ai/conversations/${conversationId}`,
+                {
+                    method: "DELETE",
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Unable to delete conversation.");
+            }
+
+            setConversations((previous) =>
+                previous.filter((item) => item._id !== conversationId)
+            );
+
+            if (currentConversationId === conversationId) {
+                setCurrentConversationId(null);
+                setMessages([]);
+            }
+
+            setApiError("");
+        } catch (error) {
+            console.error("Delete conversation error:", error);
+
+            setApiError(
+                error instanceof Error
+                    ? error.message
+                    : "Unable to delete conversation."
+            );
+        }
+    };
+
+
     // Send a message to the real PawNest AI API.
+
     const handleSend = async (event?: FormEvent<HTMLFormElement>) => {
         event?.preventDefault();
 
@@ -57,18 +190,6 @@ export default function PawNestAIPage() {
             role: "user",
             content: trimmedMessage,
         };
-
-        // Include previous messages so the AI understands the conversation.
-        const conversation = [
-            ...messages.map(({ role, content }) => ({
-                role,
-                content,
-            })),
-            {
-                role: "user" as const,
-                content: trimmedMessage,
-            },
-        ];
 
         setMessages((previous) => [...previous, userMessage]);
         setMessage("");
@@ -83,7 +204,8 @@ export default function PawNestAIPage() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    messages: conversation,
+                    message: trimmedMessage,
+                    conversationId: currentConversationId,
                 }),
             });
 
@@ -109,6 +231,19 @@ export default function PawNestAIPage() {
                 ...previous,
                 assistantMessage,
             ]);
+
+            // Remember the conversation created or returned by the API.
+            setCurrentConversationId(data.conversationId);
+
+            // Refresh the sidebar history.
+            const historyResponse = await fetch(
+                "/api/pawnest-ai/conversations"
+            );
+
+            if (historyResponse.ok) {
+                const historyData = await historyResponse.json();
+                setConversations(historyData.conversations || []);
+            }
         } catch (error) {
             console.error("PawNest AI request failed:", error);
 
@@ -117,10 +252,16 @@ export default function PawNestAIPage() {
                     ? error.message
                     : "Unable to connect to PawNest AI. Please try again."
             );
+
+            // Remove the unsaved user message if the request failed.
+            setMessages((previous) =>
+                previous.filter((item) => item.id !== userMessage.id)
+            );
         } finally {
             setIsTyping(false);
         }
     };
+
 
     // Reusable message input.
     const chatInput = (placeholder: string) => (
@@ -179,6 +320,33 @@ export default function PawNestAIPage() {
             </button>
         </form>
     );
+
+    if (loginRequired) {
+        return (
+            <div className="flex min-h-screen items-center justify-center px-6">
+                <div className="w-full max-w-md rounded-3xl border border-purple-100 bg-white p-8 text-center shadow-xl">
+                    <div className="mb-5 text-5xl">🐾</div>
+
+                    <h1 className="mb-3 text-3xl font-bold text-[#292044]">
+                        Sign in to use PawNest AI
+                    </h1>
+
+                    <p className="mb-7 text-lg leading-relaxed text-slate-600">
+                        Your conversations are saved privately to your account.
+                        Please sign in to access your chat history and continue
+                        talking with PawNest AI.
+                    </p>
+
+                    <Link
+                        href="/login"
+                        className="inline-flex items-center justify-center rounded-xl bg-[#7C3AED] px-8 py-3 text-lg font-semibold text-white transition hover:bg-purple-700"
+                    >
+                        Sign In
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <main className="relative flex h-dvh overflow-hidden bg-[#F8FAFC] text-slate-800">
@@ -256,31 +424,82 @@ export default function PawNestAIPage() {
                     </button>
                 </div>
 
-                {/* Conversation information */}
-                <div className="flex-1 overflow-y-auto px-4">
-                    <p className="px-2 py-3 text-xs font-bold uppercase tracking-wider text-slate-400">
-                        Current conversation
-                    </p>
 
-                    {messages.length > 0 ? (
-                        <div className="flex items-start gap-3 rounded-xl bg-sky-50 px-3 py-3 text-slate-600">
-                            <span className="mt-0.5">💬</span>
-                            <p className="line-clamp-2 break-words text-base">
-                                {messages.find((item) => item.role === "user")?.content}
+                {/* Conversation History */}
+                <div className="flex-1 overflow-y-auto px-4">
+                    <div className="flex items-center justify-between px-2 py-3">
+                        <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                            Chat History
+                        </p>
+
+                        {conversations.length > 0 && (
+                            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
+                                {conversations.length}
+                            </span>
+                        )}
+                    </div>
+
+                    {historyLoading ? (
+                        <div className="py-8 text-center">
+                            <p className="text-sm text-slate-400">
+                                Loading your conversations...
                             </p>
+                        </div>
+                    ) : conversations.length > 0 ? (
+                        <div className="space-y-2 pb-4">
+                            {conversations.map((conversation) => (
+                                <div
+                                    key={conversation._id}
+                                    className={`group flex items-center gap-2 rounded-xl transition ${currentConversationId === conversation._id
+                                        ? "bg-sky-50"
+                                        : "hover:bg-slate-50"
+                                        }`}
+                                >
+                                    <button
+                                        onClick={() => handleOpenConversation(conversation)}
+                                        className="flex min-w-0 flex-1 items-start gap-3 px-3 py-3 text-left"
+                                    >
+                                        <span className="mt-0.5 shrink-0">💬</span>
+
+                                        <span className="min-w-0 flex-1">
+                                            <span className="block line-clamp-2 break-words text-sm font-semibold text-slate-700">
+                                                {conversation.title}
+                                            </span>
+
+                                            <span className="mt-1 block text-xs text-slate-400">
+                                                {new Date(
+                                                    conversation.updatedAt
+                                                ).toLocaleDateString()}
+                                            </span>
+                                        </span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteConversation(conversation._id)}
+                                        disabled={isTyping}
+                                        className="mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                                        aria-label="Delete conversation"
+                                        title="Delete conversation"
+                                    >
+                                        🗑️
+                                    </button>
+                                </div>
+                            ))}
                         </div>
                     ) : (
                         <div className="rounded-xl border border-dashed border-slate-200 px-4 py-5 text-center">
                             <span className="text-2xl">🐱</span>
+
                             <p className="mt-2 text-base font-medium text-slate-500">
-                                No conversation yet
+                                No saved conversations yet
                             </p>
+
                             <p className="mt-1 text-sm text-slate-400">
-                                Start asking about your cat!
+                                Start chatting to build your history!
                             </p>
                         </div>
                     )}
                 </div>
+
 
                 {/* Sidebar footer */}
                 <div className="border-t border-slate-100 p-5">
@@ -398,11 +617,10 @@ export default function PawNestAIPage() {
                                     {messages.map((item) => (
                                         <div
                                             key={item.id}
-                                            className={`flex ${
-                                                item.role === "user"
-                                                    ? "justify-end"
-                                                    : "justify-start"
-                                            }`}
+                                            className={`flex ${item.role === "user"
+                                                ? "justify-end"
+                                                : "justify-start"
+                                                }`}
                                         >
                                             <div
                                                 className={`
@@ -412,10 +630,9 @@ export default function PawNestAIPage() {
                                                     text-base leading-7
                                                     sm:max-w-[85%] sm:text-lg
                                                     md:max-w-[78%]
-                                                    ${
-                                                        item.role === "user"
-                                                            ? "bg-linear-to-r from-sky-400 to-purple-400 text-white shadow-sm"
-                                                            : "border border-slate-200 bg-white/95 text-slate-700 shadow-sm"
+                                                    ${item.role === "user"
+                                                        ? "bg-linear-to-r from-sky-400 to-purple-400 text-white shadow-sm"
+                                                        : "border border-slate-200 bg-white/95 text-slate-700 shadow-sm"
                                                     }
                                                 `}
                                             >

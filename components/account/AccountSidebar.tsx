@@ -23,6 +23,11 @@ const menuItems = [
         icon: "🐾",
     },
     {
+        label: "My Vaccination Bookings",
+        href: "/my-account/vaccination-bookings",
+        icon: "💉",
+    },
+    {
         label: "My Cart",
         href: "/my-account/cart",
         icon: "🛒",
@@ -86,11 +91,10 @@ export default function AccountSidebar() {
             <nav
                 id="account-sidebar-navigation"
                 aria-hidden={!isOpen}
-                className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-in-out lg:mt-0 lg:grid-rows-[1fr] lg:opacity-100 ${
-                    isOpen
+                className={`grid transition-[grid-template-rows,opacity,margin] duration-500 ease-in-out lg:mt-0 lg:grid-rows-[1fr] lg:opacity-100 ${isOpen
                         ? "mt-4 grid-rows-[1fr] opacity-100"
                         : "mt-0 grid-rows-[0fr] opacity-0 lg:mt-0"
-                }`}
+                    }`}
             >
                 <div className="min-h-0 overflow-hidden">
                     <div className="flex flex-col gap-2">
@@ -99,7 +103,7 @@ export default function AccountSidebar() {
                                 item.href === "/my-account"
                                     ? pathname === item.href
                                     : pathname === item.href ||
-                                      pathname.startsWith(`${item.href}/`);
+                                    pathname.startsWith(`${item.href}/`);
 
                             return (
                                 <Link
@@ -107,18 +111,16 @@ export default function AccountSidebar() {
                                     href={item.href}
                                     onClick={() => setIsOpen(false)}
                                     tabIndex={isOpen ? 0 : -1}
-                                    className={`flex items-center gap-4 rounded-xl px-4 py-4 text-lg font-semibold transition-colors duration-300 ${
-                                        isActive
+                                    className={`flex items-center gap-4 rounded-xl px-4 py-4 text-lg font-semibold transition-colors duration-300 ${isActive
                                             ? "bg-[#E9D8FD] text-[#7C3AED]"
                                             : "text-gray-600 hover:bg-[#F8FAFC] hover:text-[#7C3AED]"
-                                    }`}
+                                        }`}
                                 >
                                     <span
-                                        className={`flex h-7 w-7 shrink-0 items-center justify-center text-2xl ${
-                                            item.label === "My Wishlist"
+                                        className={`flex h-7 w-7 shrink-0 items-center justify-center text-2xl ${item.label === "My Wishlist"
                                                 ? "text-[#EC4899]"
                                                 : ""
-                                        }`}
+                                            }`}
                                     >
                                         {item.icon}
                                     </span>
