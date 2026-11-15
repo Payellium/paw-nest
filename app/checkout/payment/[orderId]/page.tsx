@@ -105,7 +105,7 @@ export default function PaymentPage() {
 
                 // Clear the cart only when MongoDB confirms payment is verified.
                 if (data.order.paymentStatus === "paid") {
-                    clearCart();
+                    await clearCart();
                 }
             } catch (error) {
                 setErrorMessage(

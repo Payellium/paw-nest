@@ -25,11 +25,13 @@ function getServerSnapshot() {
 
 export default function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
+  const [busyProductId, setBusyProductId] = useState<number | null>(null);
   const router = useRouter();
 
   const {
     cartItems,
     cartCount,
+    isCartLoading,
     removeFromCart,
     updateQuantity,
   } = useCart();
@@ -50,6 +52,33 @@ export default function CartDrawer() {
     (total, item) => total + item.product.price * item.quantity,
     0
   );
+
+  const handleQuantityChange = async (
+    productId: number,
+    quantity: number
+  ) => {
+    if (busyProductId !== null) return;
+
+    setBusyProductId(productId);
+
+    try {
+      await updateQuantity(productId, quantity);
+    } finally {
+      setBusyProductId(null);
+    }
+  };
+
+  const handleRemove = async (productId: number) => {
+    if (busyProductId !== null) return;
+
+    setBusyProductId(productId);
+
+    try {
+      await removeFromCart(productId);
+    } finally {
+      setBusyProductId(null);
+    }
+  };
 
   return (
     <>
@@ -96,20 +125,21 @@ export default function CartDrawer() {
                   type="button"
                   onClick={() => setIsOpen(false)}
                   aria-label="Close cart"
-                  className="text-[34px] text-[#1E293B]
-                             transition-all duration-200
-                             hover:rotate-90 hover:text-[#7C3AED]"
+                  className="text-[34px] text-[#1E293B] transition-all duration-200 hover:rotate-90 hover:text-[#7C3AED]"
                 >
                   <IoClose />
                 </button>
               </div>
 
-              {/* EMPTY CART */}
-              {cartItems.length === 0 ? (
-                <div
-                  className="flex flex-1 flex-col items-center justify-center
-                             px-6 text-center"
-                >
+              {/* LOADING CART */}
+              {isCartLoading ? (
+                <div className="flex flex-1 items-center justify-center">
+                  <p className="text-xl font-semibold text-[#7C3AED]">
+                    Loading your cart...
+                  </p>
+                </div>
+              ) : cartItems.length === 0 ? (
+                <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
                   <div className="mb-8 text-[82px] text-[#E5E7EB]">
                     <FaShoppingCart />
                   </div>
@@ -125,13 +155,7 @@ export default function CartDrawer() {
                   <button
                     type="button"
                     onClick={() => setIsOpen(false)}
-                    className="mt-9 rounded-[20px]
-                               bg-linear-to-r from-[#7C20FF] to-[#914DFF]
-                               px-10 py-5 text-[20px] font-extrabold text-white
-                               shadow-[0_8px_20px_rgba(124,58,237,0.18)]
-                               transition-all duration-300
-                               hover:-translate-y-1
-                               hover:shadow-[0_12px_25px_rgba(124,58,237,0.28)]"
+                    className="mt-9 rounded-[20px] bg-linear-to-r from-[#7C20FF] to-[#914DFF] px-10 py-5 text-[20px] font-extrabold text-white shadow-[0_8px_20px_rgba(124,58,237,0.18)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(124,58,237,0.28)]"
                   >
                     Browse Shop
                   </button>
@@ -143,8 +167,7 @@ export default function CartDrawer() {
                     {cartItems.map((item) => (
                       <div
                         key={item.product.id}
-                        className="flex gap-5 rounded-2xl border border-gray-100
-                                   bg-[#FAFAFF] p-4"
+                        className="flex gap-5 rounded-2xl border border-gray-100 bg-[#FAFAFF] p-4"
                       >
                         {/* PRODUCT IMAGE */}
                         <div className="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-white sm:h-28 sm:w-28">
@@ -177,11 +200,12 @@ export default function CartDrawer() {
                               <button
                                 type="button"
                                 onClick={() =>
-                                  updateQuantity(
+                                  handleQuantityChange(
                                     item.product.id,
                                     item.quantity - 1
                                   )
                                 }
+                                disabled={busyProductId !== null}
                                 aria-label="Decrease quantity"
                                 className="text-sm text-[#7C3AED] transition hover:text-[#4C1D95]"
                               >
@@ -195,11 +219,12 @@ export default function CartDrawer() {
                               <button
                                 type="button"
                                 onClick={() =>
-                                  updateQuantity(
+                                  handleQuantityChange(
                                     item.product.id,
                                     item.quantity + 1
                                   )
                                 }
+                                disabled={busyProductId !== null}
                                 aria-label="Increase quantity"
                                 className="text-sm text-[#7C3AED] transition hover:text-[#4C1D95]"
                               >
@@ -210,7 +235,8 @@ export default function CartDrawer() {
                             {/* REMOVE PRODUCT */}
                             <button
                               type="button"
-                              onClick={() => removeFromCart(item.product.id)}
+                              onClick={() => handleRemove(item.product.id)}
+                              disabled={busyProductId !== null}
                               aria-label={`Remove ${item.product.name}`}
                               className="text-lg text-red-400 transition hover:scale-110 hover:text-red-600"
                             >

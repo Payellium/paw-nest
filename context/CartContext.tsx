@@ -4,10 +4,14 @@
 import {
     createContext,
     useContext,
-    useSyncExternalStore,
+    useState,
+    useEffect,
     useCallback,
     type ReactNode,
 } from "react";
+
+import { useSession } from "next-auth/react";
+import { usePathname, useRouter } from "next/navigation";
 
 import type { Product } from "@/types/product";
 
@@ -24,200 +28,261 @@ export interface CartItem {
 interface CartContextType {
     cartItems: CartItem[];
     cartCount: number;
-    addToCart: (product: CartProduct) => void;
-    removeFromCart: (productId: number) => void;
-    updateQuantity: (productId: number, quantity: number) => void;
-    clearCart: () => void;
+    isCartLoading: boolean;
+    addToCart: (
+        product: CartProduct,
+        quantity?: number
+    ) => Promise<boolean>;
+    removeFromCart: (productId: number) => Promise<void>;
+    updateQuantity: (productId: number, quantity: number) => Promise<void>;
+    clearCart: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const STORAGE_KEY = "pawnest-cart";
-
 const EMPTY_CART: CartItem[] = [];
 
-let cachedRawCart: string | null = null;
-let cachedCart: CartItem[] = EMPTY_CART;
+export function CartProvider({ children }: { children: ReactNode }) {
+    const { data: session, status } = useSession();
+    const router = useRouter();
+    const pathname = usePathname();
 
-const listeners = new Set<() => void>();
+    const userId = session?.user?.id;
 
-// Read the cart from localStorage and cache the parsed result.
-function getCartSnapshot(): CartItem[] {
-    if (typeof window === "undefined") {
-        return EMPTY_CART;
-    }
+    const [cartItems, setCartItems] = useState<CartItem[]>(EMPTY_CART);
+    const [cartOwnerId, setCartOwnerId] = useState<string | null>(null);
+    const [isCartLoading, setIsCartLoading] = useState(true);
 
-    try {
-        const rawCart = localStorage.getItem(STORAGE_KEY);
+    // Remove the old shared localStorage cart.
+    useEffect(() => {
+        if (status !== "loading") {
+            localStorage.removeItem("pawnest-cart");
+        }
+    }, [status]);
 
-        if (rawCart === cachedRawCart) {
-            return cachedCart;
+    // Load the authenticated user's cart from MongoDB.
+    const loadCart = useCallback(async () => {
+        if (status !== "authenticated" || !userId) {
+            return;
         }
 
-        cachedRawCart = rawCart;
+        const response = await fetch("/api/cart");
 
-        if (rawCart) {
-            const parsedCart = JSON.parse(rawCart);
+        if (!response.ok) {
+            throw new Error("Failed to load cart.");
+        }
 
-            if (!Array.isArray(parsedCart)) {
-                cachedCart = EMPTY_CART;
-                return cachedCart;
+        const data = await response.json();
+
+        setCartItems(data.items || []);
+        setCartOwnerId(userId);
+    }, [status, userId]);
+
+    // Load a fresh cart whenever the authenticated user changes.
+    useEffect(() => {
+        let isActive = true;
+
+        const fetchCart = async () => {
+            if (status === "loading") {
+                setIsCartLoading(true);
+                return;
             }
 
-            // Convert old string prices into numbers.
-            const migratedCart: CartItem[] = parsedCart
-                .filter(
-                    (item) =>
-                        item?.product &&
-                        typeof item.product.id === "number"
-                )
-                .map((item) => {
-                    const oldPrice = item.product.price;
+            if (status === "unauthenticated" || !userId) {
+                setCartItems(EMPTY_CART);
+                setCartOwnerId(null);
+                setIsCartLoading(false);
+                return;
+            }
 
-                    const numericPrice =
-                        typeof oldPrice === "number"
-                            ? oldPrice
-                            : Number(
-                                String(oldPrice).replace(/[^0-9.]/g, "")
-                            );
+            setCartItems(EMPTY_CART);
+            setCartOwnerId(null);
+            setIsCartLoading(true);
 
-                    return {
-                        ...item,
-                        product: {
-                            ...item.product,
-                            price: Number.isFinite(numericPrice)
-                                ? numericPrice
-                                : 0,
-                        },
-                        quantity: Math.max(
-                            1,
-                            Number(item.quantity) || 1
-                        ),
-                    };
+            try {
+                const response = await fetch("/api/cart");
+
+                if (!response.ok) {
+                    throw new Error("Failed to load cart.");
+                }
+
+                const data = await response.json();
+
+                if (isActive) {
+                    setCartItems(data.items || []);
+                    setCartOwnerId(userId);
+                }
+            } catch (error) {
+                console.error("Failed to load user cart:", error);
+
+                if (isActive) {
+                    setCartItems(EMPTY_CART);
+                    setCartOwnerId(userId);
+                }
+            } finally {
+                if (isActive) {
+                    setIsCartLoading(false);
+                }
+            }
+        };
+
+        fetchCart();
+
+        return () => {
+            isActive = false;
+        };
+    }, [status, userId]);
+
+    // Redirect guests to login.
+    const requireLogin = useCallback(() => {
+        if (status === "unauthenticated") {
+            router.push(
+                `/login?callbackUrl=${encodeURIComponent(pathname || "/shop")}`
+            );
+        }
+    }, [status, router, pathname]);
+
+    // Add a product.
+    const addToCart = useCallback(
+        async (product: CartProduct, quantity = 1): Promise<boolean> => {
+            if (status !== "authenticated" || !userId) {
+                requireLogin();
+                return false;
+            }
+
+            try {
+                const response = await fetch("/api/cart", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        productId: product.id,
+                        quantity,
+                    }),
                 });
 
-            cachedCart = migratedCart;
+                const data = await response.json();
 
-            // Save migrated data back to localStorage.
-            const migratedRawCart = JSON.stringify(migratedCart);
+                if (!response.ok) {
+                    throw new Error(data.message || "Failed to add product.");
+                }
 
-            if (migratedRawCart !== rawCart) {
-                localStorage.setItem(STORAGE_KEY, migratedRawCart);
-                cachedRawCart = migratedRawCart;
+                await loadCart();
+                return true;
+            } catch (error) {
+                console.error("Add to cart error:", error);
+                return false;
             }
-        } else {
-            cachedCart = EMPTY_CART;
-        }
-
-        return cachedCart;
-    } catch (error) {
-        console.error("Failed to load cart:", error);
-        cachedRawCart = null;
-        cachedCart = EMPTY_CART;
-        return EMPTY_CART;
-    }
-}
-
-// The server always renders an empty cart.
-function getServerSnapshot(): CartItem[] {
-    return EMPTY_CART;
-}
-
-// Subscribe to cart changes.
-function subscribeToCart(callback: () => void) {
-    listeners.add(callback);
-
-    // Also listen for changes from other browser tabs.
-    const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === STORAGE_KEY || event.key === null) {
-            cachedRawCart = null;
-            callback();
-        }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-        listeners.delete(callback);
-        window.removeEventListener("storage", handleStorageChange);
-    };
-}
-
-// Save cart changes and notify subscribers.
-function saveCart(items: CartItem[]) {
-    try {
-        const rawCart = JSON.stringify(items);
-
-        localStorage.setItem(STORAGE_KEY, rawCart);
-
-        cachedRawCart = rawCart;
-        cachedCart = items;
-
-        listeners.forEach((callback) => callback());
-    } catch (error) {
-        console.error("Failed to save cart:", error);
-    }
-}
-
-export function CartProvider({ children }: { children: ReactNode }) {
-    const cartItems = useSyncExternalStore(
-        subscribeToCart,
-        getCartSnapshot,
-        getServerSnapshot
+        },
+        [status, userId, requireLogin, loadCart]
     );
 
-    const addToCart = (product: CartProduct) => {
-        const currentItems = getCartSnapshot();
+    // Remove a product.
+    const removeFromCart = useCallback(
+        async (productId: number) => {
+            if (status !== "authenticated" || !userId) {
+                requireLogin();
+                return;
+            }
 
-        const existingItem = currentItems.find(
-            (item) => item.product.id === product.id
-        );
+            try {
+                const response = await fetch("/api/cart", {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ productId }),
+                });
 
-        if (existingItem) {
-            const updatedItems = currentItems.map((item) =>
-                item.product.id === product.id
-                    ? { ...item, quantity: item.quantity + 1 }
-                    : item
-            );
+                if (!response.ok) {
+                    throw new Error("Failed to remove product.");
+                }
 
-            saveCart(updatedItems);
+                await loadCart();
+            } catch (error) {
+                console.error("Remove from cart error:", error);
+            }
+        },
+        [status, userId, requireLogin, loadCart]
+    );
+
+    // Update product quantity.
+    const updateQuantity = useCallback(
+        async (productId: number, quantity: number) => {
+            if (status !== "authenticated" || !userId) {
+                requireLogin();
+                return;
+            }
+
+            if (quantity < 1) {
+                await removeFromCart(productId);
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/cart", {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        productId,
+                        quantity,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || "Failed to update quantity.");
+                }
+
+                await loadCart();
+            } catch (error) {
+                console.error("Update cart error:", error);
+            }
+        },
+        [status, userId, requireLogin, removeFromCart, loadCart]
+    );
+
+    // Clear the entire cart.
+    const clearCart = useCallback(async () => {
+        if (status !== "authenticated" || !userId) {
             return;
         }
 
-        saveCart([
-            ...currentItems,
-            { product, quantity: 1 },
-        ]);
-    };
+        const currentUserId = userId;
 
-    const removeFromCart = (productId: number) => {
-        const updatedItems = getCartSnapshot().filter(
-            (item) => item.product.id !== productId
-        );
+        try {
+            const response = await fetch("/api/cart", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({}),
+            });
 
-        saveCart(updatedItems);
-    };
+            if (!response.ok) {
+                throw new Error("Failed to clear cart.");
+            }
 
-    const updateQuantity = (productId: number, quantity: number) => {
-        if (quantity < 1) {
-            removeFromCart(productId);
-            return;
+            // Only reload if the same user is still logged in.
+            if (currentUserId === userId) {
+                await loadCart();
+            }
+        } catch (error) {
+            console.error("Clear cart error:", error);
         }
+    }, [status, userId, loadCart]);
 
-        const updatedItems = getCartSnapshot().map((item) =>
-            item.product.id === productId
-                ? { ...item, quantity }
-                : item
-        );
+    // Never expose another user's cart during account switching.
+    const visibleCartItems =
+        status === "authenticated" && cartOwnerId === userId
+            ? cartItems
+            : EMPTY_CART;
 
-        saveCart(updatedItems);
-    };
-
-    const clearCart = useCallback(() => {
-        saveCart([]);
-    }, []);
-
-    const cartCount = cartItems.reduce(
+    const cartCount = visibleCartItems.reduce(
         (total, item) => total + item.quantity,
         0
     );
@@ -225,8 +290,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return (
         <CartContext.Provider
             value={{
-                cartItems,
+                cartItems: visibleCartItems,
                 cartCount,
+                isCartLoading,
                 addToCart,
                 removeFromCart,
                 updateQuantity,

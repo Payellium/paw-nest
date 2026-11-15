@@ -36,7 +36,7 @@ interface OrderResponse {
 
 export default function CheckoutPage() {
     const router = useRouter();
-    const { cartItems } = useCart();
+    const { cartItems, isCartLoading } = useCart();
     const { status } = useSession();
 
     const [formData, setFormData] = useState<CheckoutForm>({
@@ -146,6 +146,17 @@ export default function CheckoutPage() {
                         Checking your account...
                     </p>
                 </div>
+            </main>
+        );
+    }
+
+    // Cart loading state
+    if (isCartLoading) {
+        return (
+            <main className="flex min-h-[70vh] items-center justify-center px-5">
+                <p className="text-xl font-semibold text-[#7C3AED]">
+                    Loading your cart...
+                </p>
             </main>
         );
     }
@@ -410,7 +421,7 @@ export default function CheckoutPage() {
                                 />
                             </div>
 
-                            
+
                             {/* CITY */}
                             <div>
                                 <label

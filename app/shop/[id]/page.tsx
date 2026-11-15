@@ -71,21 +71,24 @@ export default function ProductDetailsPage() {
         )
         .slice(0, 4);
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
         if (product.stock <= 0 || quantity > product.stock) return;
 
-        for (let i = 0; i < quantity; i++) {
-            addToCart({
+        const wasAdded = await addToCart(
+            {
                 id: product.id,
                 name: product.name,
                 category: product.category,
                 price: product.price,
                 image: product.image,
-            });
-        }
+            },
+            quantity
+        );
 
-        setIsAdded(true);
-        window.setTimeout(() => setIsAdded(false), 1800);
+        if (wasAdded) {
+            setIsAdded(true);
+            window.setTimeout(() => setIsAdded(false), 1800);
+        }
     };
 
     return (
@@ -137,13 +140,12 @@ export default function ProductDetailsPage() {
 
                                 {product.badge && (
                                     <span
-                                        className={`absolute left-5 top-5 z-10 rounded-full px-5 py-3 text-[17px] font-extrabold shadow-sm ${
-                                            product.badge === "Sale"
-                                                ? "bg-[#FFE4EF] text-[#DB2777]"
-                                                : product.badge === "New"
-                                                    ? "bg-[#DCFCE7] text-[#16A34A]"
-                                                    : "bg-[#FFF1C7] text-[#B45309]"
-                                        }`}
+                                        className={`absolute left-5 top-5 z-10 rounded-full px-5 py-3 text-[17px] font-extrabold shadow-sm ${product.badge === "Sale"
+                                            ? "bg-[#FFE4EF] text-[#DB2777]"
+                                            : product.badge === "New"
+                                                ? "bg-[#DCFCE7] text-[#16A34A]"
+                                                : "bg-[#FFF1C7] text-[#B45309]"
+                                            }`}
                                     >
                                         {product.badge}
                                     </span>
@@ -160,18 +162,16 @@ export default function ProductDetailsPage() {
                                         : `Add ${product.name} to wishlist`
                                 }
                                 aria-pressed={isWishlisted(product.id)}
-                                className={`absolute right-7 top-7 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 hover:scale-110 active:scale-90 sm:right-9 sm:top-9 ${
-                                    isWishlisted(product.id)
-                                        ? "scale-110 text-[#EF4444]"
-                                        : "text-[#94A3B8] hover:text-[#EF4444]"
-                                }`}
+                                className={`absolute right-7 top-7 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 hover:scale-110 active:scale-90 sm:right-9 sm:top-9 ${isWishlisted(product.id)
+                                    ? "scale-110 text-[#EF4444]"
+                                    : "text-[#94A3B8] hover:text-[#EF4444]"
+                                    }`}
                             >
                                 <FaHeart
-                                    className={`text-[23px] transition-transform duration-300 ${
-                                        isWishlisted(product.id)
-                                            ? "scale-110"
-                                            : "scale-100"
-                                    }`}
+                                    className={`text-[23px] transition-transform duration-300 ${isWishlisted(product.id)
+                                        ? "scale-110"
+                                        : "scale-100"
+                                        }`}
                                 />
                             </button>
                         </div>
@@ -325,11 +325,10 @@ export default function ProductDetailsPage() {
                                 type="button"
                                 onClick={handleAddToCart}
                                 disabled={product.stock <= 0 || quantity > product.stock}
-                                className={`mt-5 flex h-[64px] w-full items-center justify-center gap-3 rounded-2xl px-6 text-[19px] font-extrabold text-white shadow-[0_8px_18px_rgba(124,58,237,0.16)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(124,58,237,0.25)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${
-                                    isAdded
-                                        ? "bg-gradient-to-r from-[#16A34A] to-[#22C55E]"
-                                        : "bg-gradient-to-r from-[#8B4DFF] to-[#09A9ED]"
-                                }`}
+                                className={`mt-5 flex h-[64px] w-full items-center justify-center gap-3 rounded-2xl px-6 text-[19px] font-extrabold text-white shadow-[0_8px_18px_rgba(124,58,237,0.16)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(124,58,237,0.25)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${isAdded
+                                    ? "bg-gradient-to-r from-[#16A34A] to-[#22C55E]"
+                                    : "bg-gradient-to-r from-[#8B4DFF] to-[#09A9ED]"
+                                    }`}
                             >
                                 {isAdded ? (
                                     <>
