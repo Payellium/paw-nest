@@ -16,7 +16,9 @@ const notifyListeners = () => {
 
 const getSnapshot = () => cachedWishlist;
 
-const getServerSnapshot = () => [];
+const EMPTY_WISHLIST: number[] = [];
+
+const getServerSnapshot = () => EMPTY_WISHLIST;
 
 const initializeWishlist = () => {
     if (isInitialized || typeof window === "undefined") return;

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -19,7 +19,7 @@ import {
 import GlobalPawBackground from "@/components/GlobalPawBackground";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
-import { products } from "@/data/products";
+import type { Product } from "@/types/product";
 
 const formatPrice = (price: number) =>
     `৳${price.toLocaleString("en-BD")}`;
@@ -27,13 +27,102 @@ const formatPrice = (price: number) =>
 export default function ProductDetailsPage() {
     const params = useParams<{ id: string }>();
     const { addToCart } = useCart();
-    const { toggleWishlist, isWishlisted } = useWishlist();
 
     const [quantity, setQuantity] = useState(1);
     const [isAdded, setIsAdded] = useState(false);
 
+    const [product, setProduct] = useState<Product | null>(null);
+    const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [hasError, setHasError] = useState(false);
+
+    const { toggleWishlist, isWishlisted } = useWishlist();
     const productId = Number(params.id);
-    const product = products.find((item) => item.id === productId);
+
+    useEffect(() => {
+        const fetchProduct = async () => {
+            try {
+                setIsLoading(true);
+                setHasError(false);
+
+                const response = await fetch("/api/products", {
+                    cache: "no-store",
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch products.");
+                }
+
+                const data = await response.json();
+                const allProducts: Product[] = data.products || [];
+
+                const selectedProduct =
+                    allProducts.find((item) => item.id === productId) || null;
+
+                setProduct(selectedProduct);
+
+                if (selectedProduct) {
+                    const related = allProducts
+                        .filter(
+                            (item) =>
+                                item.category === selectedProduct.category &&
+                                item.id !== selectedProduct.id
+                        )
+                        .slice(0, 4);
+
+                    setRelatedProducts(related);
+                } else {
+                    setRelatedProducts([]);
+                }
+            } catch (error) {
+                console.error("Product details fetch error:", error);
+                setHasError(true);
+                setProduct(null);
+                setRelatedProducts([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProduct();
+    }, [productId]);
+
+    if (isLoading) {
+        return (
+            <main className="relative flex min-h-screen items-center justify-center bg-[#F8FAFC] px-5">
+                <GlobalPawBackground />
+
+                <p className="relative z-10 text-xl font-extrabold text-[#7C3AED]">
+                    Loading product details... 🐾
+                </p>
+            </main>
+        );
+    }
+
+    if (hasError) {
+        return (
+            <main className="relative flex min-h-screen items-center justify-center bg-[#F8FAFC] px-5">
+                <GlobalPawBackground />
+
+                <div className="relative z-10 text-center">
+                    <h1 className="text-3xl font-extrabold text-[#1E293B]">
+                        Something went wrong!
+                    </h1>
+
+                    <p className="mt-4 text-lg text-[#64748B]">
+                        We couldn&apos;t load this product. Please try again later.
+                    </p>
+
+                    <Link
+                        href="/shop"
+                        className="mt-6 inline-flex rounded-2xl bg-[#7C3AED] px-7 py-4 text-lg font-bold text-white"
+                    >
+                        Back to Shop
+                    </Link>
+                </div>
+            </main>
+        );
+    }
 
     if (!product) {
         return (
@@ -64,12 +153,6 @@ export default function ProductDetailsPage() {
         );
     }
 
-    const relatedProducts = products
-        .filter(
-            (item) =>
-                item.category === product.category && item.id !== product.id
-        )
-        .slice(0, 4);
 
     const handleAddToCart = async () => {
         if (product.stock <= 0 || quantity > product.stock) return;

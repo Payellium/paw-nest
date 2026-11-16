@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { featuredProducts } from "@/data/products";
 import type { ProductCategory } from "@/types/product";
+import Link from "next/link";
+import { useWishlist } from "@/context/WishlistContext";
 
 import {
   FaHeart,
@@ -29,6 +31,7 @@ const ShopPreview = () => {
     useState<Category>("All");
 
   const { addToCart } = useCart();
+  const { toggleWishlist, isWishlisted } = useWishlist();
 
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
   const [showCartMessage, setShowCartMessage] = useState(false);
@@ -60,8 +63,8 @@ const ShopPreview = () => {
     activeCategory === "All"
       ? featuredProducts
       : featuredProducts.filter(
-          (product) => product.category === activeCategory
-        );
+        (product) => product.category === activeCategory
+      );
 
   // Add product to cart
   const handleAddToCart = (product: (typeof featuredProducts)[number]) => {
@@ -135,10 +138,9 @@ const ShopPreview = () => {
                 text-[17px] font-extrabold
                 transition-all duration-300
                 sm:px-8 sm:text-[18px]
-                ${
-                  activeCategory === category
-                    ? "border-transparent bg-gradient-to-r from-[#7C20FF] to-[#09A9ED] text-white shadow-[0_12px_25px_rgba(124,58,237,0.20)] -translate-y-0.5"
-                    : "border-[#E2E8F0] bg-white text-[#475569] hover:-translate-y-1 hover:border-[#C4B5FD] hover:text-[#7C3AED] hover:shadow-[0_8px_20px_rgba(124,58,237,0.10)]"
+                ${activeCategory === category
+                  ? "border-transparent bg-linear-to-r from-[#7C20FF] to-[#09A9ED] text-white shadow-[0_12px_25px_rgba(124,58,237,0.20)] -translate-y-0.5"
+                  : "border-[#E2E8F0] bg-white text-[#475569] hover:-translate-y-1 hover:border-[#C4B5FD] hover:text-[#7C3AED] hover:shadow-[0_8px_20px_rgba(124,58,237,0.10)]"
                 }
               `}
             >
@@ -152,8 +154,13 @@ const ShopPreview = () => {
           {filteredProducts.map((product) => (
             <article
               key={product.id}
-              className="group overflow-hidden rounded-[25px] bg-white shadow-[0_5px_18px_rgba(15,23,42,0.08)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_18px_40px_rgba(15,23,42,0.14)]"
+              className="group relative overflow-hidden rounded-[25px] bg-white shadow-[0_5px_18px_rgba(15,23,42,0.08)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_18px_40px_rgba(15,23,42,0.14)]"
             >
+              <Link
+                href={`/shop/${product.id}`}
+                aria-label={`View details for ${product.name}`}
+                className="absolute inset-0 z-10"
+              />
               {/* ================= IMAGE ================= */}
               <div className="relative h-[270px] overflow-hidden">
                 <img
@@ -172,12 +179,11 @@ const ShopPreview = () => {
                       absolute left-5 top-5 rounded-full px-4 py-2
                       text-sm font-extrabold
                       shadow-sm
-                      ${
-                        product.badge === "Sale"
-                          ? "bg-[#FFE4EF] text-[#DB2777]"
-                          : product.badge === "New"
-                            ? "bg-[#DCFCE7] text-[#16A34A]"
-                            : "bg-[#FFF1C7] text-[#B45309]"
+                      ${product.badge === "Sale"
+                        ? "bg-[#FFE4EF] text-[#DB2777]"
+                        : product.badge === "New"
+                          ? "bg-[#DCFCE7] text-[#16A34A]"
+                          : "bg-[#FFF1C7] text-[#B45309]"
                       }
                     `}
                   >
@@ -188,10 +194,37 @@ const ShopPreview = () => {
                 {/* WISHLIST */}
                 <button
                   type="button"
-                  aria-label={`Add ${product.name} to wishlist`}
-                  className="absolute right-5 top-5 flex h-12 w-12 items-center justify-center rounded-full bg-white/95 text-[#8BA1BD] shadow-[0_5px_15px_rgba(15,23,42,0.12)] transition-all duration-300 hover:scale-110 hover:bg-[#F3E8FF] hover:text-[#7C3AED]"
+                  aria-label={
+                    isWishlisted(product.id)
+                      ? `Remove ${product.name} from wishlist`
+                      : `Add ${product.name} to wishlist`
+                  }
+                  onClick={() => toggleWishlist(product.id)}
+                  className="absolute right-5 top-5 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/95 shadow-[0_5px_15px_rgba(15,23,42,0.12)] transition-all duration-300 hover:scale-110 hover:bg-[#F3E8FF]"
                 >
-                  <FaHeart className="text-[18px]" />
+                  <FaHeart
+                    className={`text-[18px] transition-colors duration-300 ${isWishlisted(product.id)
+                        ? "text-red-500"
+                        : "text-[#8BA1BD]"
+                      }`}
+                  />
+                </button>{/* WISHLIST */}
+                <button
+                  type="button"
+                  aria-label={
+                    isWishlisted(product.id)
+                      ? `Remove ${product.name} from wishlist`
+                      : `Add ${product.name} to wishlist`
+                  }
+                  onClick={() => toggleWishlist(product.id)}
+                  className="absolute right-5 top-5 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/95 shadow-[0_5px_15px_rgba(15,23,42,0.12)] transition-all duration-300 hover:scale-110 hover:bg-[#F3E8FF]"
+                >
+                  <FaHeart
+                    className={`text-[18px] transition-colors duration-300 ${isWishlisted(product.id)
+                        ? "text-red-500"
+                        : "text-[#8BA1BD]"
+                      }`}
+                  />
                 </button>
               </div>
 
@@ -240,15 +273,14 @@ const ShopPreview = () => {
                   type="button"
                   onClick={() => handleAddToCart(product)}
                   className={`
-                    group/button mt-6 flex h-[54px] w-full
+                    group/button relative z-20 mt-6 flex h-[54px] w-full
                     items-center justify-center gap-3 rounded-[16px]
                     text-[17px] font-extrabold text-white
                     shadow-[0_8px_18px_rgba(124,58,237,0.18)]
                     transition-all duration-300
-                    ${
-                      addedProductId === product.id
-                        ? "bg-gradient-to-r from-[#16A34A] to-[#22C55E] shadow-[0_8px_18px_rgba(34,197,94,0.25)]"
-                        : "bg-gradient-to-r from-[#8B4DFF] to-[#09A9ED] hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(124,58,237,0.28)]"
+                    ${addedProductId === product.id
+                      ? "bg-gradient-to-r from-[#16A34A] to-[#22C55E] shadow-[0_8px_18px_rgba(34,197,94,0.25)]"
+                      : "bg-gradient-to-r from-[#8B4DFF] to-[#09A9ED] hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(124,58,237,0.28)]"
                     }
                   `}
                 >
@@ -272,7 +304,11 @@ const ShopPreview = () => {
 
         {/* ================= VIEW ALL ================= */}
         <div className="mt-14 flex justify-center">
-          <button
+          <Link
+            href="/shop"
+            aria-label="View all products"
+          >
+            <button
             type="button"
             className="flex items-center gap-3 rounded-full border-2 border-[#DDD6FE] bg-white px-8 py-4 text-[17px] font-extrabold text-[#7C3AED] transition-all duration-300 hover:-translate-y-1 hover:border-[#A78BFA] hover:bg-[#F5F3FF] hover:shadow-[0_10px_25px_rgba(124,58,237,0.10)]"
           >
@@ -280,6 +316,7 @@ const ShopPreview = () => {
 
             <FaArrowRight className="text-sm" />
           </button>
+          </Link>
         </div>
       </div>
     </section>

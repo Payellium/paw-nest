@@ -2,15 +2,45 @@
 "use client";
 
 import Image from "next/image";
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FaStar, FaArrowLeft, FaArrowRight } from "react-icons/fa";
-
-import { featuredProducts } from "@/data/products";
+import Link from "next/link";
+import type { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 
 const BestSellers = () => {
   const sliderRef = useRef<HTMLDivElement>(null);
   const { addToCart } = useCart();
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        setError(false);
+
+        const response = await fetch("/api/products?featured=true");
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch featured products.");
+        }
+
+        const data = await response.json();
+
+        setProducts(data.products || []);
+      } catch (error) {
+        console.error("Best Sellers fetch error:", error);
+        setError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   /*
    * Move carousel when arrow/cue is clicked
@@ -91,91 +121,118 @@ const BestSellers = () => {
       </div>
 
       {/* ================= PRODUCT SLIDER ================= */}
-      <div
-        ref={sliderRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={stopDragging}
-        onMouseLeave={stopDragging}
-        className="mt-14 flex cursor-grab gap-6 overflow-x-auto px-6 pb-4 select-none scrollbar-hide sm:px-10 lg:px-12"
-      >
-        {featuredProducts.map((product) => (
-          <article
-            key={product.id}
-            className="w-81.25 min-w-81.25 overflow-hidden rounded-[25px] bg-linear-to-b from-white to-[#F8FBFF] shadow-[0_4px_12px_rgba(15,23,42,0.12)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_16px_30px_rgba(15,23,42,0.15)] sm:w-81.25 sm:min-w-81.25"
+      {isLoading ? (
+        <div className="mt-14 flex min-h-60 items-center justify-center">
+          <p className="text-xl font-semibold text-[#7C3AED]">
+            Loading our best sellers...
+          </p>
+        </div>
+      ) : error ? (
+        <div className="mt-14 flex min-h-60 items-center justify-center px-6">
+          <p className="text-lg font-semibold text-red-500">
+            Unable to load products. Please try again later.
+          </p>
+        </div>
+      ) : products.length === 0 ? (
+        <div className="mt-14 flex min-h-60 items-center justify-center px-6">
+          <p className="text-lg font-semibold text-[#8BA1BD]">
+            No featured products available right now.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div
+            ref={sliderRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={stopDragging}
+            onMouseLeave={stopDragging}
+            className="mt-14 flex cursor-grab gap-6 overflow-x-auto px-6 pb-4 select-none scrollbar-hide sm:px-10 lg:px-12"
           >
-            {/* ================= IMAGE ================= */}
-            <div className="relative h-50 overflow-hidden">
-              <Image
-                src={product.image}
-                alt={product.name}
-                fill
-                sizes="325px"
-                draggable={false}
-                className="object-cover transition-transform duration-500 hover:scale-105"
-              />
-            </div>
+            {products.map((product) => (
+              <article
+                key={product.id}
+                className="relative w-81.25 min-w-81.25 overflow-hidden rounded-[25px] bg-linear-to-b from-white to-[#F8FBFF] shadow-[0_4px_12px_rgba(15,23,42,0.12)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_16px_30px_rgba(15,23,42,0.15)] sm:w-81.25 sm:min-w-81.25"
+              >
+                <Link
+                  href={`/shop/${product.id}`}
+                  aria-label={`View details for ${product.name}`}
+                  className="absolute inset-0 z-10"
+                />
 
-            {/* ================= PRODUCT INFO ================= */}
-            <div className="px-6 py-5">
-              {/* Product name */}
-              <h3 className="min-h-13 text-[21px] font-extrabold leading-[1.35] text-[#26344D]">
-                {product.name}
-              </h3>
-
-              {/* Stars and rating */}
-              <div className="mt-2 flex items-center gap-2">
-                <div className="flex gap-1 text-[#FFB000]">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <FaStar key={star} className="text-[16px]" />
-                  ))}
+                {/* ================= IMAGE ================= */}
+                <div className="pointer-events-none relative h-50 overflow-hidden">
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    fill
+                    sizes="325px"
+                    draggable={false}
+                    className="object-cover transition-transform duration-500 hover:scale-105"
+                  />
                 </div>
 
-                <span className="text-[15px] font-semibold text-[#8BA1BD]">
-                  {product.rating} ({product.reviews})
-                </span>
-              </div>
+                {/* ================= PRODUCT INFO ================= */}
+                <div className="px-6 py-5">
+                  <h3 className="min-h-13 text-[21px] font-extrabold leading-[1.35] text-[#26344D]">
+                    {product.name}
+                  </h3>
 
-              {/* Price + Add */}
-              <div className="mt-4 flex items-center justify-between">
-                <span className="text-[24px] font-extrabold text-[#731EFF]">
-                  ৳{product.price.toLocaleString("en-BD")}
-                </span>
+                  {/* Stars and rating */}
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="flex gap-1 text-[#FFB000]">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <FaStar key={star} className="text-[16px]" />
+                      ))}
+                    </div>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    addToCart({
-                      id: product.id,
-                      name: product.name,
-                      category: product.category,
-                      price: product.price,
-                      image: product.image,
-                    })
-                  }
-                  disabled={product.stock <= 0}
-                  className="rounded-full bg-[#7C20FF] px-5 py-2 text-[17px] font-extrabold text-white transition-all duration-300 hover:scale-105 hover:bg-[#6916E8] hover:shadow-[0_8px_18px_rgba(124,32,255,0.3)] disabled:cursor-not-allowed disabled:bg-gray-400"
-                >
-                  {product.stock <= 0 ? "Sold Out" : "Add"}
-                </button>
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
+                    <span className="text-[15px] font-semibold text-[#8BA1BD]">
+                      {product.rating} ({product.reviews})
+                    </span>
+                  </div>
 
-      {/* ================= MOBILE DRAG HINT ================= */}
-      <div className="mt-2 flex justify-center md:hidden">
-        <button
-          type="button"
-          onClick={() => scrollProducts("right")}
-          className="flex items-center gap-2 text-sm font-semibold text-[#8BA1BD]"
-        >
-          <FaArrowLeft />
-          Drag to explore
-          <FaArrowRight />
-        </button>
-      </div>
+                  {/* Price + Add */}
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-[24px] font-extrabold text-[#731EFF]">
+                      ৳{product.price.toLocaleString("en-BD")}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        addToCart({
+                          id: product.id,
+                          name: product.name,
+                          category: product.category,
+                          price: product.price,
+                          image: product.image,
+                        })
+                      }
+                      disabled={product.stock <= 0}
+                      className="relative z-20 rounded-full bg-[#7C20FF] px-5 py-2 text-[17px] font-extrabold text-white transition-all duration-300 hover:scale-105 hover:bg-[#6916E8] hover:shadow-[0_8px_18px_rgba(124,32,255,0.3)] disabled:cursor-not-allowed disabled:bg-gray-400"
+                    >
+                      {product.stock <= 0 ? "Sold Out" : "Add"}
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {/* ================= MOBILE DRAG HINT ================= */}
+          <div className="mt-2 flex justify-center md:hidden">
+            <button
+              type="button"
+              onClick={() => scrollProducts("right")}
+              className="flex items-center gap-2 text-sm font-semibold text-[#8BA1BD]"
+            >
+              <FaArrowLeft />
+              Drag to explore
+              <FaArrowRight />
+            </button>
+          </div>
+        </>
+      )}
     </section>
   );
 };

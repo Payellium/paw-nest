@@ -102,8 +102,13 @@ export default function MyWishlistPage() {
                         {wishlistProducts.map((product) => (
                             <article
                                 key={product.id}
-                                className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[24px] border border-[#E9E2F8] bg-white shadow-[0_5px_18px_rgba(15,23,42,0.05)] transition-all duration-500 hover:-translate-y-2 hover:border-[#D8C5FF] hover:shadow-[0_18px_35px_rgba(15,23,42,0.11)]"
+                                className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-[24px] border border-[#E9E2F8] bg-white shadow-[0_5px_18px_rgba(15,23,42,0.05)] transition-all duration-500 hover:-translate-y-2 hover:border-[#D8C5FF] hover:shadow-[0_18px_35px_rgba(15,23,42,0.11)]"
                             >
+                                <Link
+                                    href={`/shop/${product.id}`}
+                                    aria-label={`View details for ${product.name}`}
+                                    className="absolute inset-0 z-10"
+                                />
                                 {/* PRODUCT IMAGE */}
                                 <div className="relative aspect-[4/3] overflow-hidden bg-[#F1F5F9]">
                                     <Link
@@ -121,13 +126,12 @@ export default function MyWishlistPage() {
 
                                     {product.badge && (
                                         <span
-                                            className={`absolute left-4 top-4 rounded-full px-4 py-2 text-sm font-extrabold shadow-sm ${
-                                                product.badge === "Sale"
-                                                    ? "bg-[#FFE4EF] text-[#DB2777]"
-                                                    : product.badge === "New"
-                                                        ? "bg-[#DCFCE7] text-[#16A34A]"
-                                                        : "bg-[#FFF1C7] text-[#B45309]"
-                                            }`}
+                                            className={`absolute left-4 top-4 rounded-full px-4 py-2 text-sm font-extrabold shadow-sm ${product.badge === "Sale"
+                                                ? "bg-[#FFE4EF] text-[#DB2777]"
+                                                : product.badge === "New"
+                                                    ? "bg-[#DCFCE7] text-[#16A34A]"
+                                                    : "bg-[#FFF1C7] text-[#B45309]"
+                                                }`}
                                         >
                                             {product.badge}
                                         </span>
@@ -139,7 +143,8 @@ export default function MyWishlistPage() {
                                             removeFromWishlist(product.id)
                                         }
                                         aria-label={`Remove ${product.name} from wishlist`}
-                                        className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#EF4444] shadow-md transition-all duration-300 hover:scale-110 hover:bg-[#FFF1F2] active:scale-90"
+                                        className="absolute right-4 top-4 z-20
+                                         flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#EF4444] shadow-md transition-all duration-300 hover:scale-110 hover:bg-[#FFF1F2] active:scale-90"
                                     >
                                         <FaHeart className="text-[18px]" />
                                     </button>
@@ -151,12 +156,9 @@ export default function MyWishlistPage() {
                                         {product.category}
                                     </p>
 
-                                    <Link
-                                        href={`/shop/${product.id}`}
-                                        className="mt-2 block text-[21px] font-extrabold leading-7 text-[#1E293B] transition-colors duration-300 hover:text-[#7C3AED]"
-                                    >
+                                    <h3 className="pointer-events-none mt-2 text-[21px] font-extrabold leading-7 text-[#1E293B]">
                                         {product.name}
-                                    </Link>
+                                    </h3>
 
                                     <p className="mt-3 line-clamp-2 text-[16px] font-medium leading-6 text-[#718096]">
                                         {product.description}
@@ -192,7 +194,7 @@ export default function MyWishlistPage() {
                                             type="button"
                                             onClick={() => handleAddToCart(product)}
                                             disabled={product.stock <= 0}
-                                            className="flex h-[52px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#8B4DFF] to-[#09A9ED] px-3 text-[16px] font-extrabold text-white shadow-[0_8px_18px_rgba(124,58,237,0.16)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(124,58,237,0.25)] disabled:cursor-not-allowed disabled:opacity-50"
+                                            className="relative z-20 flex h-[52px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#8B4DFF] to-[#09A9ED] px-3 text-[16px] font-extrabold text-white shadow-[0_8px_18px_rgba(124,58,237,0.16)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(124,58,237,0.25)] disabled:cursor-not-allowed disabled:opacity-50"
                                         >
                                             <FaShoppingBag />
                                             Add to Cart
@@ -201,7 +203,7 @@ export default function MyWishlistPage() {
                                         <Link
                                             href={`/shop/${product.id}`}
                                             aria-label={`View ${product.name}`}
-                                            className="flex h-[52px] w-[52px] items-center justify-center rounded-xl border border-[#DDD6FE] bg-[#F5F3FF] text-[#7C3AED] transition-all duration-300 hover:-translate-y-1 hover:bg-[#E9D8FD]"
+                                            className="relative z-20 flex h-[52px] w-[52px] items-center justify-center rounded-xl border border-[#DDD6FE] bg-[#F5F3FF] text-[#7C3AED] transition-all duration-300 hover:-translate-y-1 hover:bg-[#E9D8FD]"
                                         >
                                             <FaArrowRight />
                                         </Link>

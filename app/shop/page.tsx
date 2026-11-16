@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useWishlist } from "@/context/WishlistContext";
@@ -17,7 +17,7 @@ import {
 } from "react-icons/fa";
 
 import { useCart } from "@/context/CartContext";
-import { products } from "@/data/products";
+import type { Product } from "@/types/product";
 import type { ProductCategory } from "@/types/product";
 import GlobalPawBackground from "@/components/GlobalPawBackground";
 
@@ -47,6 +47,37 @@ const formatPrice = (price: number) =>
 export default function ShopPage() {
   const { addToCart } = useCart();
 
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        setHasError(false);
+
+        const response = await fetch("/api/products", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch products.");
+        }
+
+        const data = await response.json();
+        setProducts(data.products || []);
+      } catch (error) {
+        console.error("Shop products fetch error:", error);
+        setHasError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   const [activeCategory, setActiveCategory] =
     useState<CategoryFilter>("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,7 +95,7 @@ export default function ShopPage() {
 
       return counts;
     }, {} as Record<CategoryFilter, number>);
-  }, []);
+  }, [products]);
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
@@ -106,9 +137,9 @@ export default function ShopPage() {
     }
 
     return result;
-  }, [activeCategory, searchQuery, sortBy]);
+  }, [products, activeCategory, searchQuery, sortBy]);
 
-  const handleAddToCart = (product: (typeof products)[number]) => {
+  const handleAddToCart = (product: Product) => {
     addToCart({
       id: product.id,
       name: product.name,
@@ -166,7 +197,7 @@ export default function ShopPage() {
       <GlobalPawBackground />
       <div className="relative z-10">
         {/* HERO */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-[#F1EAFE] via-[#EAF5FF] to-[#E5F8F0] px-5 py-16 sm:px-8 sm:py-20 lg:px-12 2xl:px-16">
+        <section className="relative overflow-hidden bg-linear-to-br from-[#F1EAFE] via-[#EAF5FF] to-[#E5F8F0] px-5 py-16 sm:px-8 sm:py-20 lg:px-12 2xl:px-16">
           <div className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-[#D8C5FF]/40 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-32 left-10 h-72 w-72 rounded-full bg-[#BDEBFF]/50 blur-3xl" />
 
@@ -310,7 +341,7 @@ export default function ShopPage() {
 
                 {categoryFilters}
 
-                <div className="mt-7 rounded-2xl bg-gradient-to-br from-[#F1EAFE] to-[#EAF5FF] p-5">
+                <div className="mt-7 rounded-2xl bg-linear-to-br from-[#F1EAFE] to-[#EAF5FF] p-5">
                   <p className="text-[19px] font-extrabold text-[#5B35A5]">
                     Made for little paws
                   </p>
@@ -345,13 +376,30 @@ export default function ShopPage() {
                     )}
                 </div>
 
-                {filteredProducts.length > 0 ? (
+                {isLoading ? (
+                  <div className="flex min-h-[360px] items-center justify-center rounded-[24px] bg-white">
+                    <p className="text-xl font-bold text-[#7C3AED]">
+                      Loading our lovely products... 🐾
+                    </p>
+                  </div>
+                ) : hasError ? (
+                  <div className="flex min-h-[360px] items-center justify-center rounded-[24px] bg-white px-6 text-center">
+                    <p className="text-lg font-bold text-red-500">
+                      Unable to load products. Please try again later.
+                    </p>
+                  </div>
+                ) : filteredProducts.length > 0 ? (
                   <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 2xl:grid-cols-3">
                     {filteredProducts.map((product) => (
                       <article
                         key={product.id}
-                        className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[26px] border border-[#EDF0F5] bg-white shadow-[0_5px_18px_rgba(15,23,42,0.05)] transition-all duration-500 ease-out hover:-translate-y-2 hover:border-[#D8C5FF] hover:shadow-[0_18px_40px_rgba(15,23,42,0.12)]"
+                        className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-[26px] border border-[#EDF0F5] bg-white shadow-[0_5px_18px_rgba(15,23,42,0.05)] transition-all duration-500 ease-out hover:-translate-y-2 hover:border-[#D8C5FF] hover:shadow-[0_18px_40px_rgba(15,23,42,0.12)]"
                       >
+                        <Link
+                          href={`/shop/${product.id}`}
+                          aria-label={`View details for ${product.name}`}
+                          className="absolute inset-0 z-10"
+                        />
                         {/* PRODUCT IMAGE */}
                         <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#F1F5F9]">
                           <Image
@@ -383,9 +431,9 @@ export default function ShopPage() {
                                 ? `Remove ${product.name} from wishlist`
                                 : `Add ${product.name} to wishlist`
                             }
-                            className={`absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md transition-all duration-300 ease-out hover:scale-110 active:scale-90 ${isWishlisted(product.id)
-                                ? "scale-110 text-[#EF4444]"
-                                : "text-[#94A3B8] hover:text-[#EF4444]"
+                            className={`absolute right-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md transition-all duration-300 ease-out hover:scale-110 active:scale-90 ${isWishlisted(product.id)
+                              ? "scale-110 text-[#EF4444]"
+                              : "text-[#94A3B8] hover:text-[#EF4444]"
                               }`}
                           >
                             <FaHeart
@@ -401,12 +449,9 @@ export default function ShopPage() {
                             {product.category}
                           </p>
 
-                          <Link
-                            href={`/shop/${product.id}`}
-                            className="mt-2 block min-h-[56px] text-[20px] font-extrabold leading-7 text-[#1E293B] transition-colors duration-300 hover:text-[#7C3AED]"
-                          >
+                          <h3 className="pointer-events-none mt-2 min-h-[56px] text-[20px] font-extrabold leading-7 text-[#1E293B]">
                             {product.name}
-                          </Link>
+                          </h3>
 
                           <p className="mt-2 line-clamp-2 min-h-[48px] text-[16px] font-medium leading-6 text-[#718096]">
                             {product.description}
@@ -438,7 +483,7 @@ export default function ShopPage() {
                             <button
                               type="button"
                               onClick={() => handleAddToCart(product)}
-                              className={`flex h-[54px] w-full items-center justify-center gap-3 rounded-[15px] text-[16px] font-extrabold text-white shadow-[0_8px_18px_rgba(124,58,237,0.16)] transition-all duration-300 ${addedProductId === product.id
+                              className={`relative z-20 flex h-[54px] w-full items-center justify-center gap-3 rounded-[15px] text-[16px] font-extrabold text-white shadow-[0_8px_18px_rgba(124,58,237,0.16)] transition-all duration-300 ${addedProductId === product.id
                                 ? "bg-gradient-to-r from-[#16A34A] to-[#22C55E]"
                                 : "bg-gradient-to-r from-[#8B4DFF] to-[#09A9ED] hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(124,58,237,0.25)]"
                                 }`}
