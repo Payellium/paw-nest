@@ -159,16 +159,16 @@ export default async function AdminDashboardPage() {
             </header> */}
 
             {/* Welcome panel */}
-            <section className="overflow-hidden rounded-3xl bg-gradient-to-r from-[#E9D8FD] via-[#DFF4FF] to-[#D8F3DC] p-6 shadow-sm sm:p-9 lg:p-10">
+            <section className="overflow-hidden rounded-3xl bg-gradient-to-r from-[#E9D8FD] via-[#DFF4FF] to-[#D8F3DC] p-4 shadow-sm sm:p-6 lg:p-7">
                 <p className="text-base font-bold uppercase tracking-wider text-violet-700 sm:text-lg">
                     Welcome Back
                 </p>
 
-                <h2 className="mt-3 break-words text-3xl font-extrabold sm:text-4xl lg:text-5xl">
+                <h2 className="mt-2 break-words text-2xl font-extrabold sm:text-3xl lg:text-4xl">
                     Hello, {session.user.name || "Admin"}! 🐾
                 </h2>
 
-                <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-700 sm:text-xl">
+                <p className="mt-3 max-w-3xl text-[16px] leading-8 text-slate-700 md:text-lg">
                     Your work helps cats find safe, loving homes. Review
                     submitted listings and make sure every cat profile is
                     ready for adoption.
@@ -178,7 +178,7 @@ export default async function AdminDashboardPage() {
             {/* Statistics */}
             <section>
                 <div className="mb-7">
-                    <h2 className="text-3xl font-extrabold sm:text-4xl">
+                    <h2 className="text-2xl font-extrabold sm:text-3xl">
                         Dashboard Overview
                     </h2>
 
@@ -201,26 +201,26 @@ export default async function AdminDashboardPage() {
                             <Link
                                 key={card.title}
                                 href={`/admin/cats${filters[index]}`}
-                                className="group block rounded-3xl border border-violet-100 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-violet-200 sm:p-7"
+                                className="group block rounded-3xl border border-violet-100 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-violet-200"
                             >
                                 <div
-                                    className={`mb-6 flex h-16 w-16 items-center justify-center rounded-2xl ${card.color} text-3xl`}
+                                    className={`mb-3 flex h-12 w-12 items-center justify-center rounded-2xl ${card.color} text-2xl`}
                                     aria-hidden="true"
                                 >
                                     {card.icon}
                                 </div>
 
-                                <p className="text-lg font-semibold leading-7 text-slate-600 sm:text-xl">
+                                <p className="text-lg font-semibold leading-7 text-slate-600">
                                     {card.title}
                                 </p>
 
-                                <p className={`mt-4 text-4xl font-extrabold sm:text-5xl ${card.valueColor}`}>
+                                <p className={`mt-3 text-3xl font-extrabold sm:text-4xl ${card.valueColor}`}>
                                     {statistics[index].toLocaleString()}
                                 </p>
 
                                 
 
-                                <span className="mt-5 inline-flex items-center text-base font-bold text-violet-700 sm:text-lg">
+                                <span className="mt-4 inline-flex items-center text-base font-bold text-violet-700 transition group-hover:gap-3">
                                     View listings
                                     <span className="ml-2 transition-transform group-hover:translate-x-1" aria-hidden="true">
                                         →
@@ -234,14 +234,14 @@ export default async function AdminDashboardPage() {
             </section>
 
             {/* Recent submissions */}
-            <section className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm sm:p-8 lg:p-10">
+            <section className="rounded-3xl border border-violet-100 bg-white p-5 shadow-sm sm:p-6 lg:p-8">
                 <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h2 className="text-3xl font-extrabold sm:text-4xl">
+                        <h2 className="text-2xl font-extrabold sm:text-3xl">
                             Recent Listings
                         </h2>
 
-                        <p className="mt-3 text-lg leading-8 text-slate-600 sm:text-xl">
+                        <p className="mt-3 text-[16px] leading-8 text-slate-600 md:text-lg">
                             The five most recently added cat profiles.
                         </p>
                     </div>
@@ -256,7 +256,7 @@ export default async function AdminDashboardPage() {
                 </div>
 
                 {recentCats.length === 0 ? (
-                    <div className="mt-8 rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50/40 px-5 py-12 text-center sm:py-16">
+                    <div className="mt-8 rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50/40 px-4 py-8 text-center sm:py-10">
                         <p className="text-5xl" aria-hidden="true">🐈</p>
 
                         <h3 className="mt-5 text-2xl font-extrabold sm:text-3xl">
@@ -293,11 +293,11 @@ export default async function AdminDashboardPage() {
                                         )}
 
                                         <div className="min-w-0">
-                                            <h3 className="break-words text-xl font-extrabold sm:text-2xl">
+                                            <h3 className="break-words text-lg font-extrabold sm:text-xl">
                                                 {cat.name}
                                             </h3>
 
-                                            <p className="mt-1 text-base text-slate-600 sm:text-lg">
+                                            <p className="mt-1 text-base text-slate-600">
                                                 {cat.breed}
                                             </p>
 
@@ -333,8 +333,8 @@ export default async function AdminDashboardPage() {
 
             {/* Quick actions */}
             <section>
-                <div className="mb-7">
-                    <h2 className="text-3xl font-extrabold sm:text-4xl">
+                <div className="mb-5">
+                    <h2 className="text-2xl font-extrabold sm:text-3xl">
                         Quick Actions
                     </h2>
 
@@ -354,7 +354,7 @@ export default async function AdminDashboardPage() {
                                 {action.icon}
                             </div>
 
-                            <h3 className="mt-6 text-2xl font-extrabold sm:text-3xl">
+                            <h3 className="mt-5 text-xl font-extrabold sm:text-2xl">
                                 {action.title}
                             </h3>
 

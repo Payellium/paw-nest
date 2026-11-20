@@ -99,6 +99,17 @@ export async function PATCH(
 
     // Approve adoption
     if (status === "Approved") {
+      // NID must be verified before adoption approval
+      if (adoptionRequest.nidVerification.status !== "Verified") {
+        return Response.json(
+          {
+            success: false,
+            message:
+              "Please verify the applicant's NID before approving this adoption request.",
+          },
+          { status: 403 },
+        );
+      }
       if (cat.adoptionStatus !== "Available") {
         return Response.json(
           {

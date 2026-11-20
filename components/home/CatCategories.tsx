@@ -1,41 +1,78 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import React from 'react';
-import { FaPaw } from 'react-icons/fa';
+
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import { FaPaw } from "react-icons/fa";
+
+interface Cat {
+    ageInMonths: number;
+    adoptionStatus: string;
+    specialNeeds?: boolean;
+}
+
+const categories = [
+    {
+        name: "Kittens",
+        image: "/images/categories/kitten1.jpg",
+        icon: "🐱",
+        matches: (cat: Cat) =>
+            cat.ageInMonths <= 12 && cat.ageInMonths >= 0,
+    },
+    {
+        name: "Young Cats",
+        image: "/images/categories/young-cat1.jpg",
+        icon: "🐈",
+        matches: (cat: Cat) =>
+            cat.ageInMonths > 12 && cat.ageInMonths <= 36,
+    },
+    {
+        name: "Adult Cats",
+        image: "/images/categories/adult-cat1.jpg",
+        icon: "😺",
+        matches: (cat: Cat) =>
+            cat.ageInMonths > 36 && cat.ageInMonths <= 84,
+    },
+    {
+        name: "Senior Cats",
+        image: "/images/categories/senior-cats.webp",
+        icon: "🐾",
+        matches: (cat: Cat) => cat.ageInMonths > 84,
+    },
+    {
+        name: "Special Needs",
+        image: "/images/categories/handicapped-pets-3.jpg",
+        icon: "💜",
+        matches: (cat: Cat) => cat.specialNeeds === true,
+    },
+];
 
 const CatCategories = () => {
-    const categories = [
-        {
-            name: "Kittens",
-            available: "24 available",
-            image: "/images/categories/kitten1.jpg",
-            icon: "🐱",
-        },
-        {
-            name: "Young Cats",
-            available: "35 available",
-            image: "/images/categories/young-cat1.jpg",
-            icon: "🐈",
-        },
-        {
-            name: "Adult Cats",
-            available: "42 available",
-            image: "/images/categories/adult-cat1.jpg",
-            icon: "😺",
-        },
-        {
-            name: "Senior Cats",
-            available: "18 available",
-            image: "/images/categories/senior-cats.webp",
-            icon: "🐾",
-        },
-        {
-            name: "Special Needs",
-            available: "12 available",
-            image: "/images/categories/handicapped-pets-3.jpg",
-            icon: "💜",
-        },
-    ];
+    const [cats, setCats] = useState<Cat[]>([]);
+
+    useEffect(() => {
+        const fetchCats = async () => {
+            try {
+                const response = await fetch("/api/cats");
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch cats");
+                }
+
+                const data = await response.json();
+
+                if (data.success && Array.isArray(data.cats)) {
+                    setCats(data.cats);
+                }
+            } catch (error) {
+                console.error("Error fetching category cats:", error);
+            }
+        };
+
+        fetchCats();
+    }, []);
+
     return (
         <section className="relative z-10 px-5 py-20 sm:px-8 lg:px-8">
 
@@ -60,45 +97,53 @@ const CatCategories = () => {
             {/* Categories */}
             <div className="mx-auto mt-10 grid max-w-[1810px] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
 
-                {categories.map((category) => (
-                    <Link
-                        href={`/adopt?category=${encodeURIComponent(category.name)}`}
-                        key={category.name}
-                        className="group relative h-70 overflow-hidden rounded-[30px] shadow-[0_8px_20px_rgba(15,23,42,0.12)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_15px_35px_rgba(124,58,237,0.18)]"
-                    >
+                {categories.map((category) => {
+                    const availableCount = cats.filter(
+                        (cat) =>
+                            cat.adoptionStatus === "Available" &&
+                            category.matches(cat)
+                    ).length;
 
-                        {/* Image */}
-                        <Image
-                            src={category.image}
-                            alt={category.name}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
-                        />
+                    return (
+                        <Link
+                            href={`/adopt?category=${encodeURIComponent(category.name)}`}
+                            key={category.name}
+                            className="group relative h-70 overflow-hidden rounded-[30px] shadow-[0_8px_20px_rgba(15,23,42,0.12)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_15px_35px_rgba(124,58,237,0.18)]"
+                        >
 
-                        {/* Dark overlay */}
-                        <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
+                            {/* Image */}
+                            <Image
+                                src={category.image}
+                                alt={category.name}
+                                fill
+                                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
+                            />
 
-                        {/* Category icon */}
-                        <div className="absolute right-5 top-5 flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-xl backdrop-blur-md">
-                            {category.icon}
-                        </div>
+                            {/* Dark overlay */}
+                            <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
 
-                        {/* Content */}
-                        <div className="absolute bottom-6 left-0 right-0 text-center text-white">
+                            {/* Category icon */}
+                            <div className="absolute right-5 top-5 flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-xl backdrop-blur-md">
+                                {category.icon}
+                            </div>
 
-                            <h3 className="text-2xl font-extrabold drop-shadow-md">
-                                {category.name}
-                            </h3>
+                            {/* Content */}
+                            <div className="absolute bottom-6 left-0 right-0 text-center text-white">
 
-                            <p className="mt-1 text-base font-semibold text-white/90">
-                                {category.available}
-                            </p>
+                                <h3 className="text-2xl font-extrabold drop-shadow-md">
+                                    {category.name}
+                                </h3>
 
-                        </div>
+                                <p className="mt-1 text-base font-semibold text-white/90">
+                                    {availableCount} available
+                                </p>
 
-                    </Link>
-                ))}
+                            </div>
+
+                        </Link>
+                    );
+                })}
 
             </div>
 
@@ -109,9 +154,7 @@ const CatCategories = () => {
                     className="group flex items-center gap-3 rounded-full bg-linear-to-r from-[#7C3AED] to-[#2196F3] px-7 py-3.5 text-base font-bold text-white shadow-[0_8px_20px_rgba(124,58,237,0.2)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_28px_rgba(124,58,237,0.3)]"
                 >
                     <FaPaw />
-
                     View All Cats
-
                     <span className="transition-transform duration-300 group-hover:translate-x-1">
                         →
                     </span>

@@ -29,7 +29,7 @@ const menuItems = [
     },
     {
         label: "My Cart",
-        href: "/my-account/cart",
+        href: "/my-account/my-cart",
         icon: "🛒",
     },
     {

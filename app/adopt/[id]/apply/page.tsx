@@ -38,6 +38,10 @@ export default function AdoptionApplicationPage({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  const [documentFront, setDocumentFront] = useState<File | null>(null);
+  const [documentBack, setDocumentBack] = useState<File | null>(null);
+  const [nidConsent, setNidConsent] = useState(false);
+
   const [formData, setFormData] = useState({
     applicantName: "",
     email: "",
@@ -107,6 +111,7 @@ export default function AdoptionApplicationPage({
     }));
   }
 
+
   async function handleSubmit(
     event: React.FormEvent<HTMLFormElement>
   ) {
@@ -123,9 +128,43 @@ export default function AdoptionApplicationPage({
       return;
     }
 
+    if (!documentFront || !documentBack) {
+      setError("Please upload both sides of your NID.");
+      return;
+    }
+
+    if (!nidConsent) {
+      setError("Please provide consent for NID verification.");
+      return;
+    }
+
     try {
       setSubmitting(true);
 
+      // 1. Upload both NID documents to Cloudinary
+      const uploadFormData = new FormData();
+
+      uploadFormData.append("documentFront", documentFront);
+      uploadFormData.append("documentBack", documentBack);
+      uploadFormData.append("consentGiven", "true");
+
+      const uploadResponse = await fetch(
+        "/api/nid-verification/upload",
+        {
+          method: "POST",
+          body: uploadFormData,
+        }
+      );
+
+      const uploadData = await uploadResponse.json();
+
+      if (!uploadResponse.ok || !uploadData.success) {
+        throw new Error(
+          uploadData.message || "NID document upload failed."
+        );
+      }
+
+      // 2. Submit the adoption application with NID references
       const response = await fetch("/api/adoption-requests", {
         method: "POST",
         headers: {
@@ -134,6 +173,7 @@ export default function AdoptionApplicationPage({
         body: JSON.stringify({
           catId: cat._id,
           ...formData,
+          nidVerification: uploadData.nidVerification,
         }),
       });
 
@@ -142,8 +182,8 @@ export default function AdoptionApplicationPage({
       if (!response.ok) {
         throw new Error(
           data.message ||
-            data.error ||
-            "Unable to submit your application. Please try again."
+          data.error ||
+          "Unable to submit your application. Please try again."
         );
       }
 
@@ -158,6 +198,7 @@ export default function AdoptionApplicationPage({
       setSubmitting(false);
     }
   }
+
 
   if (loadingCat) {
     return (
@@ -355,11 +396,10 @@ export default function AdoptionApplicationPage({
                       {typeof cat.ageInMonths === "number"
                         ? cat.ageInMonths < 12
                           ? `${cat.ageInMonths} months`
-                          : `${Math.floor(cat.ageInMonths / 12)} ${
-                              Math.floor(cat.ageInMonths / 12) === 1
-                                ? "year"
-                                : "years"
-                            }`
+                          : `${Math.floor(cat.ageInMonths / 12)} ${Math.floor(cat.ageInMonths / 12) === 1
+                            ? "year"
+                            : "years"
+                          }`
                         : typeof cat.age === "number"
                           ? `${cat.age} ${cat.age === 1 ? "year" : "years"}`
                           : "Not specified"}
@@ -562,6 +602,93 @@ export default function AdoptionApplicationPage({
                     Share a little about your motivation and how you&apos;ll care for
                     your new companion.
                   </p>
+                </div>
+
+
+                {/* NID Verification */}
+                <div className="rounded-3xl border border-purple-200 bg-purple-50/60 p-5 sm:p-7">
+                  <div className="mb-5">
+                    <span className="text-3xl">🪪</span>
+
+                    <h3 className="mt-3 text-2xl font-extrabold text-slate-900 sm:text-3xl">
+                      NID Verification
+                    </h3>
+
+                    <p className="mt-2 text-base leading-7 text-slate-600 sm:text-lg">
+                      Please upload both sides of your National ID card
+                      to help us verify your adoption application.
+                    </p>
+                  </div>
+
+                  <div className="space-y-5">
+                    {/* Front side */}
+                    <div>
+                      <label
+                        htmlFor="documentFront"
+                        className={labelClass}
+                      >
+                        Front Side of NID *
+                      </label>
+
+                      <input
+                        id="documentFront"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        required
+                        onChange={(event) =>
+                          setDocumentFront(event.target.files?.[0] ?? null)
+                        }
+                        className={`${inputClass} file:mr-4 file:rounded-xl file:border-0 file:bg-[#E9D8FD] file:px-4 file:py-2 file:font-bold file:text-[#7C3AED]`}
+                      />
+                    </div>
+
+                    {/* Back side */}
+                    <div>
+                      <label
+                        htmlFor="documentBack"
+                        className={labelClass}
+                      >
+                        Back Side of NID *
+                      </label>
+
+                      <input
+                        id="documentBack"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        required
+                        onChange={(event) =>
+                          setDocumentBack(event.target.files?.[0] ?? null)
+                        }
+                        className={`${inputClass} file:mr-4 file:rounded-xl file:border-0 file:bg-[#E9D8FD] file:px-4 file:py-2 file:font-bold file:text-[#7C3AED]`}
+                      />
+                    </div>
+
+                    <p className="text-sm leading-6 text-slate-500 sm:text-base">
+                      Accepted formats: JPG, PNG and WEBP. Maximum size:
+                      5 MB per image.
+                    </p>
+
+                    {/* Consent */}
+                    <div className="rounded-2xl border border-purple-200 bg-white p-4 sm:p-5">
+                      <label className="flex cursor-pointer items-start gap-3">
+                        <input
+                          type="checkbox"
+                          checked={nidConsent}
+                          onChange={(event) =>
+                            setNidConsent(event.target.checked)
+                          }
+                          required
+                          className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-[#7C3AED]"
+                        />
+
+                        <span className="text-sm leading-7 text-slate-700 sm:text-base">
+                          I consent to PawNest securely collecting and
+                          reviewing my NID documents for identity
+                          verification as part of my adoption application.
+                        </span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="rounded-2xl bg-[#F8FAFC] p-4 sm:p-5">

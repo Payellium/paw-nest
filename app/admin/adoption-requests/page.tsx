@@ -1,7 +1,9 @@
 import { connectDB } from "@/lib/mongodb";
 import AdoptionRequest from "@/models/AdoptionRequest";
+import "@/models/Cat";
 import Link from "next/link";
 import AdoptionRequestActions from "@/components/admin/AdoptionRequestActions";
+import NIDVerificationActions from "@/components/admin/NIDVerificationActions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +17,14 @@ type AdoptionRequestItem = {
     hasPreviousCatExperience: boolean;
     reason: string;
     status: "Pending" | "Approved" | "Rejected";
+
+    nidVerification?: {
+        status: "Pending" | "Verified" | "Rejected";
+        consentGiven: boolean;
+        rejectionReason?: string;
+        verifiedAt?: string;
+    };
+
     createdAt: string;
     catId: {
         _id: string;
@@ -145,13 +155,12 @@ export default async function AdminAdoptionRequestsPage() {
                                     </div>
 
                                     <span
-                                        className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${
-                                            item.status === "Pending"
-                                                ? "bg-amber-100 text-amber-700"
-                                                : item.status === "Approved"
-                                                  ? "bg-green-100 text-green-700"
-                                                  : "bg-red-100 text-red-600"
-                                        }`}
+                                        className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${item.status === "Pending"
+                                            ? "bg-amber-100 text-amber-700"
+                                            : item.status === "Approved"
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-red-100 text-red-600"
+                                            }`}
                                     >
                                         {item.status}
                                     </span>
@@ -250,6 +259,15 @@ export default async function AdminAdoptionRequestsPage() {
                                         {item.reason}
                                     </p>
                                 </div>
+
+                                {/* NID Verification */}
+                                {item.nidVerification && (
+                                    <NIDVerificationActions
+                                        requestId={item._id}
+                                        status={item.nidVerification.status}
+                                        rejectionReason={item.nidVerification.rejectionReason}
+                                    />
+                                )}
 
                                 {/* Actions */}
                                 {item.status === "Pending" && item.catId && (

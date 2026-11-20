@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useSearchParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import CatCard from "@/components/CatCard";
 import GlobalPawBackground from "@/components/GlobalPawBackground";
@@ -15,6 +16,7 @@ type Cat = {
   image: string;
   personality: string[];
   adoptionStatus: string;
+  specialNeeds?: boolean;
 };
 
 const AdoptPage = () => {
@@ -27,6 +29,9 @@ const AdoptPage = () => {
   const [ageGroup, setAgeGroup] = useState("");
   const [gender, setGender] = useState("");
   const [location, setLocation] = useState("");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const category = searchParams.get("category") || "";
 
   useEffect(() => {
     let cancelled = false;
@@ -80,7 +85,8 @@ const AdoptPage = () => {
     breed !== "" ||
     ageGroup !== "" ||
     gender !== "" ||
-    location !== "";
+    location !== "" ||
+    category !== "";
 
   const clearFilters = () => {
     setSearch("");
@@ -88,6 +94,8 @@ const AdoptPage = () => {
     setAgeGroup("");
     setGender("");
     setLocation("");
+
+    router.replace("/adopt");
   };
 
   const filteredCats = cats.filter((cat) => {
@@ -105,6 +113,14 @@ const AdoptPage = () => {
 
     const matchesLocation = location === "" || cat.location === location;
 
+    const matchesCategory =
+      category === "" ||
+      (category === "Kittens" && ageInMonths <= 12) ||
+      (category === "Young Cats" && ageInMonths > 12 && ageInMonths <= 36) ||
+      (category === "Adult Cats" && ageInMonths > 36 && ageInMonths <= 84) ||
+      (category === "Senior Cats" && ageInMonths > 84) ||
+      (category === "Special Needs" && cat.specialNeeds === true);
+
     const matchesAge =
       ageGroup === "" ||
       (ageGroup === "Kitten" && ageInMonths <= 12) ||
@@ -113,11 +129,13 @@ const AdoptPage = () => {
       (ageGroup === "Senior" && ageInMonths > 84);
 
     return (
+      cat.adoptionStatus === "Available" &&
       matchesSearch &&
       matchesBreed &&
       matchesAge &&
       matchesGender &&
-      matchesLocation
+      matchesLocation &&
+      matchesCategory
     );
   });
 
@@ -217,9 +235,8 @@ const AdoptPage = () => {
                 ? "Finding your furry friends..."
                 : fetchError
                   ? "Unable to retrieve cats"
-                  : `${filteredCats.length} ${
-                      filteredCats.length === 1 ? "cat" : "cats"
-                    } found`}
+                  : `${filteredCats.length} ${filteredCats.length === 1 ? "cat" : "cats"
+                  } found`}
             </p>
           </div>
 

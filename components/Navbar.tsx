@@ -63,6 +63,8 @@ const Navbar = () => {
     };
   }, [status]);
   const isLoggedIn = status === "authenticated";
+  const isAdmin = session?.user?.role === "admin";
+
   const userName = session?.user?.name || "My Account";
   const userImage = profileImage || session?.user?.image || "";
   const userInitial = userName.charAt(0).toUpperCase();
@@ -122,6 +124,16 @@ const Navbar = () => {
           <FaUser className="text-[#7C3AED]" />
           My Account
         </Link>
+        {isAdmin && (
+          <Link
+            href="/admin"
+            onClick={closeMenu}
+            className="flex items-center gap-3 rounded-xl px-4 py-3 text-[20px] font-semibold text-[#50607A] transition hover:bg-[#F3EDFC] hover:text-[#7C3AED]"
+          >
+            <FaTachometerAlt className="text-[#7C3AED]" />
+            Admin Dashboard
+          </Link>
+        )}
         <Link
           href="/my-account/settings"
           onClick={closeMenu}
@@ -353,7 +365,7 @@ const Navbar = () => {
               Shop
             </Link>
 
-            
+
 
             <div className="flex items-center gap-3">
               <CartDrawer />

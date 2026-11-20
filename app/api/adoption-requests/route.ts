@@ -1,9 +1,34 @@
 
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/mongodb";
+import cloudinary from "@/lib/cloudinary";
 import Cat from "@/models/Cat";
 import AdoptionRequest from "@/models/AdoptionRequest";
 import mongoose from "mongoose";
+
+// Verify that an uploaded NID document belongs to this applicant.
+async function verifyNIDDocument(
+  publicId: string,
+  userId: string
+): Promise<boolean> {
+  const expectedFolder = `pawnest/nid/${userId}/`;
+
+  // Check the applicant-specific upload folder.
+  if (!publicId.startsWith(expectedFolder)) {
+    return false;
+  }
+
+  // Confirm that the asset exists and is authenticated.
+  const resource = await cloudinary.api.resource(publicId, {
+    resource_type: "image",
+    type: "authenticated",
+  });
+
+  return (
+    resource.public_id === publicId &&
+    resource.type === "authenticated"
+  );
+}
 
 export async function POST(request: Request) {
   try {
@@ -41,9 +66,10 @@ export async function POST(request: Request) {
       livingEnvironment,
       hasPreviousCatExperience,
       reason,
+      nidVerification,
     } = body;
 
-    // 3. Validate required fields and data types
+    // 3. Validate required application fields
     if (
       typeof catId !== "string" ||
       typeof applicantName !== "string" ||
@@ -119,7 +145,62 @@ export async function POST(request: Request) {
       );
     }
 
-    // 8. Check whether the cat exists
+    // 8. Validate NID verification information
+    if (
+      !nidVerification ||
+      typeof nidVerification !== "object" ||
+      typeof nidVerification.documentFront !== "string" ||
+      typeof nidVerification.documentBack !== "string" ||
+      nidVerification.consentGiven !== true ||
+      !nidVerification.documentFront.trim() ||
+      !nidVerification.documentBack.trim()
+    ) {
+      return Response.json(
+        {
+          success: false,
+          message: "Please upload both sides of your NID and provide consent.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // 9. Verify ownership and authenticated delivery of both documents
+    let frontVerified = false;
+    let backVerified = false;
+
+    try {
+      frontVerified = await verifyNIDDocument(
+        nidVerification.documentFront.trim(),
+        session.user.id
+      );
+
+      backVerified = await verifyNIDDocument(
+        nidVerification.documentBack.trim(),
+        session.user.id
+      );
+    } catch (error) {
+      console.error("NID document verification error:", error);
+
+      return Response.json(
+        {
+          success: false,
+          message: "Unable to verify your NID uploads. Please upload them again.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!frontVerified || !backVerified) {
+      return Response.json(
+        {
+          success: false,
+          message: "Invalid NID documents. Please upload your own documents.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // 10. Check whether the cat exists
     const cat = await Cat.findById(catId);
 
     if (!cat) {
@@ -129,7 +210,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 9. Only available cats can receive applications
+    // 11. Only available cats can receive applications
     if (cat.adoptionStatus?.toLowerCase() !== "available") {
       return Response.json(
         {
@@ -140,7 +221,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 10. Prevent duplicate pending applications from the same account
+    // 12. Prevent duplicate pending applications
     const existingRequest = await AdoptionRequest.findOne({
       catId: cat._id,
       userId: session.user.id,
@@ -157,7 +238,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 11. Save the application
+    // 13. Save the adoption application and NID references
     const adoptionRequest = await AdoptionRequest.create({
       catId: cat._id,
       userId: session.user.id,
@@ -168,6 +249,14 @@ export async function POST(request: Request) {
       livingEnvironment,
       hasPreviousCatExperience,
       reason: reason.trim(),
+
+      nidVerification: {
+        documentFront: nidVerification.documentFront.trim(),
+        documentBack: nidVerification.documentBack.trim(),
+        consentGiven: true,
+        status: "Pending",
+      },
+
       status: "Pending",
     });
 
@@ -180,6 +269,7 @@ export async function POST(request: Request) {
           catId: adoptionRequest.catId.toString(),
           applicantName: adoptionRequest.applicantName,
           status: adoptionRequest.status,
+          nidVerificationStatus: adoptionRequest.nidVerification.status,
           createdAt: adoptionRequest.createdAt,
         },
       },
